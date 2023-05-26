@@ -1,0 +1,892 @@
+body {
+  background: rgb(6, 8, 12);
+  background: linear-gradient(90deg, rgba(6, 8, 12, 1) 15%, rgba(0, 0, 0, 1) 65%);
+  margin: 0px;
+  /* Add margins to the body */
+}
+
+.container {
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 40px;
+  margin-bottom: 60px;
+}
+
+.category-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 45px;
+  background-color: #32e2df2a;
+  border-radius: 8px;
+  color: white;
+  text-align: center;
+  font-weight: bold; /* Add this line to make the text bold */
+  margin-bottom: 0px; /* Add margin-bottom to create space between the header and other elements */
+  transition: background-color 0.3s ease;
+}
+
+.category-header:hover {
+  background-color:#1bece9c5;
+}
+
+.hidden-label {
+  visibility: hidden;
+  font-size: 0.01em
+}
+
+.main-content-wrapper {
+  display: flex;
+}
+
+h1 {
+  font-family: 'Libre Barcode 39 Extended Text', cursive;
+  font-size: 80px;
+  text-shadow: 1px 1px 0px #30ced4, -2px -2px 0px #602dec;
+  margin-right: 70px
+  /* Adjust the width as needed #30d454 green, #b02dec pink*/
+}
+
+.button-section {
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  width: 20%;
+  /* Adjust the width as needed */
+  overflow-y: auto;
+  height: calc(100vh - 2rem);
+  /* Adjust the height based on container padding */
+}
+
+.content-section {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Centers the buttons */
+  gap: 10px;
+  /* adjust this value to your needs */
+}
+
+textarea::placeholder {
+  color: rgb(131, 168, 212);
+  /* Or any color you prefer */
+  opacity: 1;
+  /* Firefox requires this to display the color properly */
+}
+
+input#promptTemplate::placeholder {
+  color: rgb(131, 168, 212);
+  opacity: 1;
+}
+
+/* Custom styles */
+.category {
+  border: 2px solid #32e2df;
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.category h2 {
+  margin-bottom: 0.5rem;
+}
+
+.category textarea {
+  width: 100%;
+  min-height: 100px;
+  background-color: #284662;
+  border: none;
+  color: white;
+  border-radius: 10px;
+}
+
+.locked-textarea {
+  background-color: #1c2d40 !important;
+  /* Adjust these colors as needed */
+  color: #aaa !important;
+}
+
+.category input[type="number"] {
+  height: 30px;
+  width: 50px;
+  border-radius: 7px;
+  background: #284662;
+  border: none;
+  color: white;
+  text-align: center;
+}
+
+.category textarea:focus,
+.category input[type="number"]:focus {
+  outline: none;
+}
+
+.spacing-class {
+  display: flex;
+  justify-content: space-between;
+  /* This will put maximum space between items */
+  align-items: center;
+  flex-direction: row;
+  gap: 50px;
+  margin-top: 12px;
+  font-weight: bold;
+  /* Make the text bold */
+  font-family: "Arial", sans-serif;
+  /* adjust this value to your needs */
+}
+
+.elements-container {
+  display: flex;
+  gap: 50px;
+  /* or whatever your preferred gap is */
+}
+
+#numPrompts {
+  border-radius: 7px;
+  background: #284662;
+  border: none;
+  color: white;
+  width: 70px;
+  text-align: center;
+}
+
+.bold-label {
+  font-weight: bold;
+}
+
+.button {
+  position: relative;
+  font-weight: bold;
+  border-radius: 8px;
+  background-color: #6f14ac;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  transition: background-color 0.3s ease;
+  width: 80%;
+  z-index: 1;
+}
+
+.button::before {
+  mix-blend-mode: hard-light;
+  /* Or any of the other values */
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  bottom: 6px;
+  left: 6px;
+  background-color: #e66ffb;
+  /* Adjust the color and transparency */
+  border-radius: 8px;
+  z-index: 2;
+}
+
+.button:hover {
+  background-color: #2f2688;
+  color: white;
+}
+
+.button:active {
+  outline: none;
+}
+
+/* Add Category Button */
+#addCategoryBtn {
+  background-color: #d36002;
+  color: white;
+}
+
+#addCategoryBtn:hover {
+  background-color: #ebad3a;
+  color: white;
+}
+
+#addCategoryBtn::before {
+  background-color: rgba(238, 96, 1, 0.644);
+  mix-blend-mode: screen;
+}
+
+#addCategoryBtn:hover::before {
+  background-color: rgba(248, 184, 111, 0.644);
+  mix-blend-mode: screen;
+}
+
+/* Clear All Button */
+#clearAllBtn {
+  background-color: #c28e00;
+  color: white;
+}
+
+#clearAllBtn:hover {
+  background-color: #dabb53;
+  color: white;
+}
+
+#clearAllBtn::before {
+  background-color: rgba(202, 156, 6, 0.644);
+  mix-blend-mode: screen;
+}
+
+#clearAllBtn:hover::before {
+  background-color: rgba(240, 221, 111, 0.644);
+  mix-blend-mode: screen;
+}
+
+/* Undo Clear All Button */
+#undoClearAllButton {
+  background-color: #8ba300;
+  color: white;
+}
+
+#undoClearAllButton:hover {
+  background-color: #b2da53;
+  color: white;
+}
+
+#undoClearAllButton::before {
+  background-color: rgba(142, 180, 2, 0.644);
+  mix-blend-mode: screen;
+}
+
+#undoClearAllButton:hover::before {
+  background-color: rgba(195, 240, 111, 0.644);
+  mix-blend-mode: screen;
+}
+
+/* Save Custom Prompts Button */
+#saveCustomPromptsBtn {
+  background-color: #269405;
+  color: white;
+}
+
+#saveCustomPromptsBtn:hover {
+  background-color: #68e05e;
+  color: white;
+}
+
+#saveCustomPromptsBtn::before {
+  background-color: rgba(83, 197, 37, 0.644);
+  mix-blend-mode: screen;
+}
+
+#saveCustomPromptsBtn:hover::before {
+  background-color: rgba(126, 235, 105, 0.644);
+  mix-blend-mode: screen;
+}
+
+/* Load Custom Prompts Button */
+#loadCustomPromptsBtn {
+  background-color: #018f19;
+  color: white;
+}
+
+#loadCustomPromptsBtn:hover {
+  background-color: #65d86f;
+  color: white;
+}
+
+#loadCustomPromptsBtn::before {
+  background-color: rgba(50, 223, 102, 0.644);
+  mix-blend-mode: screen;
+}
+
+#loadCustomPromptsBtn:hover::before {
+  background-color: rgba(107, 236, 113, 0.644);
+  mix-blend-mode: screen;
+}
+
+/* Save All Button */
+#saveAllBtn {
+  background-color: #019149;
+  color: white;
+}
+
+#saveAllBtn:hover {
+  background-color: #80d88e;
+  color: white;
+}
+
+#saveAllBtn::before {
+  background-color: rgba(43, 226, 165, 0.644);
+  mix-blend-mode: screen;
+}
+
+#saveAllBtn:hover::before {
+  background-color: rgba(109, 240, 218, 0.644);
+  mix-blend-mode: screen;
+}
+
+/* Include All Button */
+#IncludeAllBtn {
+  background-color: #a7009f;
+  color: white;
+}
+
+#IncludeAllBtn:hover {
+  background-color: #e67fe1;
+  color: white;
+}
+
+#IncludeAllBtn::before {
+  background-color: rgba(249, 71, 255, 0.644);
+  mix-blend-mode: screen;
+}
+
+#IncludeAllBtn:hover::before {
+  background-color: rgba(215, 152, 240, 0.644);
+  mix-blend-mode: screen;
+}
+
+/* Lock All Button */
+#lockAllBtn {
+  background-color: #7801da;
+  color: white;
+}
+
+#lockAllBtn:hover {
+  background-color: #af55ec;
+  color: white;
+}
+
+#lockAllBtn::before {
+  background-color: #8400ff;
+  mix-blend-mode: screen;
+}
+
+#lockAllBtn:hover::before {
+  background-color: rgb(172, 31, 228);
+  mix-blend-mode: screen;
+}
+
+/* Randomize Button */
+#randomizeBtn {
+  background-color: #119405;
+  color: white;
+}
+
+#randomizeBtn:hover {
+  background-color: #b626f0;
+  color: white;
+  animation: rainbow 3s linear infinite;
+}
+
+@keyframes rainbow {
+  0% {background: red;}
+  14% {background: rgb(204, 133, 0);}
+  28% {background: rgb(167, 167, 0);}
+  42% {background: rgb(0, 192, 0);}
+  57% {background: blue;}
+  71% {background: indigo;}
+  85% {background: violet;}
+  100% {background: red;}
+}
+
+#randomizeBtn::before {
+  background-color: rgba(105, 71, 255, 0.644);
+  mix-blend-mode: screen;
+}
+
+#randomizeBtn:hover::before {
+  background-color: rgba(111, 209, 248, 0.644);
+  mix-blend-mode: screen;
+  animation: rainbow2 3s linear infinite;
+}
+
+@keyframes rainbow2 {
+  0% {background: green;}
+  14% {background: lime;}
+  28% {background: rgb(165, 165, 0);}
+  42% {background: orange;}
+  57% {background: red;}
+  71% {background: orange;}
+  85% {background: rgb(151, 151, 0);}
+  100% {background: green;}
+}
+
+/* Generate Button */
+#generateBtn {
+  background-color: #0110dd;
+  color: white;
+}
+
+#generateBtn:hover {
+  background-color: #ff8800;
+  color: white;
+}
+
+#generateBtn::before {
+  background-color: rgba(29, 127, 255, 0.644);
+  mix-blend-mode: screen;
+}
+
+#generateBtn:hover::before {
+  background-color: rgba(255, 109, 51, 0.644);
+  mix-blend-mode: screen;
+}
+
+/* Undo Remove Button */
+#undoRemoveButton {
+  background-color: #0134dd;
+  color: white;
+}
+
+#undoRemoveButton:hover {
+  background-color: #426aee;
+  color: white;
+}
+
+#undoRemoveButton::before {
+  background-color: #0082ecc4;
+  mix-blend-mode: screen;
+}
+
+#undoRemoveButton:hover::before {
+  background-color: rgba(74, 173, 255, 0.644);
+  mix-blend-mode: screen;
+}
+
+/* Undo Remove All Button */
+#undoRemoveAllButton {
+  background-color: #0964ec;
+  color: white;
+}
+
+#undoRemoveAllButton:hover {
+  background-color: #5d9ef3;
+  color: white;
+}
+
+#undoRemoveAllButton::before {
+  background-color: rgba(71, 172, 255, 0.644);
+  mix-blend-mode: screen;
+}
+
+#undoRemoveAllButton:hover::before {
+  background-color: rgba(96, 205, 255, 0.644);
+  mix-blend-mode: screen;
+}
+
+/* Restore Default Layout Button */
+#restoreDefaultLayoutBtn {
+  background-color: #5c00a7;
+  color: white;
+}
+
+#restoreDefaultLayoutBtn:hover {
+  background-color: #655aca;
+  color: white;
+}
+
+#restoreDefaultLayoutBtn::before {
+  background-color: rgba(172, 71, 255, 0.644);
+  mix-blend-mode: screen;
+}
+
+#restoreDefaultLayoutBtn:hover::before {
+  background-color: rgba(152, 111, 248, 0.644);
+  mix-blend-mode: screen;
+}
+
+/* Advanced Layout Button */
+#advancedButton {
+  background-color: #3a0070;
+  color: white;
+}
+
+#advancedButton:hover {
+  background-color: #8e5aca;
+  color: white;
+}
+
+#advancedButton::before {
+  background-color: rgba(97, 10, 179, 0.644);
+  mix-blend-mode: screen;
+}
+
+#advancedButton:hover::before {
+  background-color: rgba(171, 111, 248, 0.644);
+  mix-blend-mode: screen;
+}
+
+.category-container {
+  position: relative;
+  transition: transform 0.2s;
+  /* Add smooth transition effect when items are moved */
+}
+
+.category-header:hover {
+  cursor: grab;
+}
+
+.category-header:active {
+  cursor: grabbing;
+  /* Change cursor to grabbing when user starts dragging */
+}
+
+.category-container.dragging {
+  opacity: 0.5;
+  /* Make dragging item semi-transparent */
+  cursor: grabbing;
+  transform: scale(1.05);
+  /* Make dragging item slightly bigger */
+}
+
+/* Highlight drop zones */
+.category-container.over {
+  border-color: #888;
+  /* Highlight the drop target with a border */
+}
+
+.remove-btn {
+  font-weight: bold;
+  width: 20%;
+  background-color: #eb0e61;
+}
+
+.remove-btn:hover {
+  /* Add hover styles here */
+  /* For example, change the background color */
+  background-color: #ec80a9;
+}
+
+.remove-btn::before {
+  background-color: rgba(255, 71, 255, 0.644);
+  mix-blend-mode: screen;
+  /* Adjust the color and transparency */
+}
+
+.remove-btn:hover::before {
+  background-color: rgba(230, 134, 174, 0.644);
+  /* Adjust the color and transparency */
+  mix-blend-mode: screen;
+}
+
+.add-template-btn {
+  font-weight: bold;
+  width: 20%;
+  background-color: #04b387;
+}
+
+.add-template-btn:hover {
+  /* Add hover styles here */
+  /* For example, change the background color */
+  background-color: #80ecec;
+}
+
+.add-template-btn::before {
+  background-color: rgba(13, 173, 125, 0.644);
+  mix-blend-mode: screen;
+  /* Adjust the color and transparency */
+}
+
+.add-template-btn:hover::before {
+  background-color: rgba(134, 230, 201, 0.644);
+  /* Adjust the color and transparency */
+  mix-blend-mode: screen;
+}
+
+#removeAllContainer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+
+/* Clear History Button */
+#clearHistoryBtn {
+  margin-top: 20px;
+  max-width: 15%;
+  background-color: #da5700;
+  color: white;
+}
+
+#clearHistoryBtn:hover {
+  background-color: #d4a523;
+  color: white;
+}
+
+#clearHistoryBtn::before {
+  background-color: rgba(228, 91, 0, 0.644);
+  mix-blend-mode: screen;
+}
+
+#clearHistoryBtn:hover::before {
+  background-color: rgba(214, 184, 49, 0.644);
+  mix-blend-mode: screen;
+}
+
+/* Remove All Button */
+#removeAllBtn {
+  margin-top: 20px;
+  max-width: 15%;
+  background-color: #8b002e;
+  color: white;
+}
+
+#removeAllBtn:hover {
+  background-color: #f35dba;
+  color: white;
+}
+
+#removeAllBtn::before {
+  background-color: rgba(216, 3, 67, 0.644);
+  mix-blend-mode: screen;
+}
+
+#removeAllBtn:hover::before {
+  background-color: rgba(255, 96, 149, 0.644);
+  mix-blend-mode: screen;
+}
+
+textarea#promptTemplate {
+  height: 30px;
+  resize: vertical;
+}
+
+.prompt-output {
+  border-radius: 7px;
+  border: 1px solid #63f7de;
+  resize: vertical;
+  /* This allows the user to resize the textbox vertically */
+  min-height: 38px;
+  /* This sets the minimum height */
+  max-height: 200px;
+  /* This sets the maximum height */
+  max-width: 100%;
+  /* This will make the textbox take up the full width of its container. */
+  width: 100%;
+  /* This will set the initial width of the textbox. Adjust this value to suit your needs. */
+  background-color: #284662 !important;
+  /* Adjust this value to change the background color */
+  color: #fff !important;
+  /* Adjust this value to change the text color */
+}
+
+.copy-btn {
+  width: 10%;
+  background-color: #00a753;
+  color: white;
+}
+
+.copy-btn:hover {
+  background-color: #78d888;
+  color: white;
+}
+
+.copy-btn::before {
+  background-color: rgba(71, 255, 194, 0.644);
+  mix-blend-mode: screen;
+  /* Adjust the color and transparency */
+}
+
+.copy-btn:hover::before {
+  background-color: rgba(104, 223, 203, 0.644);
+  /* Adjust the color and transparency */
+  mix-blend-mode: screen;
+}
+
+#promptHistory {
+  border-radius: 7px;
+  border: 1px solid #299996;
+  max-height: 500px;
+  /* Set to whatever maximum height you want */
+  overflow-y: auto;
+  /* Will add a scrollbar if the content exceeds the max-height */
+  padding: 1rem;
+  background-color: #101c29;
+}
+
+#promptHistory p {
+  margin: 0;
+  padding: 0.5rem 0;
+  color: #ffffff;
+}
+
+.category label:first-of-type {
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  /* Make the text all caps */
+  font-weight: bold;
+  /* Make the text bold */
+  font-family: "Arial", sans-serif;
+  /* Change the font family */
+}
+
+#promptTemplate {
+  width: 100%;
+  /* This will make the textarea full width. */
+  min-height: 30px;
+  /* This will set a minimum height for the textarea. */
+  background-color: #284662;
+  color: white;
+}
+
+#numWords {
+  border-radius: 7px;
+  text-align: center;
+  background-color: #284662;
+  color: white;
+  border: none;
+}
+
+.action-buttons-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.textBoxContainer {
+  display: flex;
+  align-items: center;
+  /* This will vertically center align the textBox and copyButton */
+  gap: 1rem;
+  /* This will add some space between the textBox and copyButton */
+}
+
+.soft-ui-input {
+  border-radius: 8px;
+  background: #284662;
+  border: none;
+  color: white;
+}
+
+.soft-ui-input:focus {
+  outline: none;
+}
+
+:root {
+  --switch-size: .7;
+  /* Adjust this to scale the switch */
+}
+
+.switch {
+  --secondary-container: #124a52;
+  --primary: #32e2df;
+  font-size: calc(17px * var(--switch-size));
+  position: relative;
+  display: inline-block;
+  width: calc(3.7em * var(--switch-size));
+  height: calc(1.8em * var(--switch-size));
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #242d3f;
+  transition: .2s;
+  border-radius: calc(30px * var(--switch-size));
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: calc(1.4em * var(--switch-size));
+  width: calc(1.4em * var(--switch-size));
+  border-radius: calc(20px * var(--switch-size));
+  left: calc(0.2em * var(--switch-size));
+  bottom: calc(0.2em * var(--switch-size));
+  background-color: #aaaaae;
+  transition: .4s;
+}
+
+input:checked+.slider::before {
+  background-color: var(--primary);
+}
+
+input:checked+.slider {
+  background-color: var(--secondary-container);
+}
+
+input:focus+.slider {
+  box-shadow: 0 0 calc(1px * var(--switch-size)) var(--secondary-container);
+}
+
+input:checked+.slider:before {
+  transform: translateX(calc(1.9em * var(--switch-size)));
+}
+
+/* For WebKit browsers (Chrome, Safari) */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #32e2df;
+  /* Set to transparent */
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #fff;
+}
+
+/* For the main scrollbar of the page */
+body::-webkit-scrollbar {
+  width: 10px;
+  background: #030303;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: #32e2df;
+  /* Set the desired background color */
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: #ffffff;
+  /* Set the desired hover background color */
+}
+
+/* For Firefox */
+/* Note: Firefox does not currently support styling the scrollbar directly. However, you can use this code to style the track */
+/* Note: Firefox Nightly version 69 or later supports scrollbar customization using a different syntax */
+* {
+  scrollbar-color: #32e2df #1a1a48;
+  scrollbar-width: auto;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  /* Remove default appearance */
+  appearance: none;
+  margin: 0;
+  /* Remove default margin */
+}
+
+input[type="number"]::after {
+  content: '▲';
+  /* Add custom up arrow */
+  color: #fff;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+}
+
+input[type="number"]::before {
+  content: '▼';
+  /* Add custom down arrow */
+  color: #fff;
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+}

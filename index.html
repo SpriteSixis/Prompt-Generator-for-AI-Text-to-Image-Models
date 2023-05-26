@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prompt Generator</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39+Extended+Text&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+  <div class="container mx-auto px-1">
+    <h1 class="text-4xl font-bold text-right my-6">PrOMpt GenERator</h1>
+    <div class="main-content-wrapper">
+      <!-- Button section -->
+      <div class="button-section">
+        <div class="button-group mt-4">
+          <button id="addCategoryBtn" class="btn button btn-primary ml-2"
+            title="Create Category Container. Shift + Alt + A">Add
+            Category</button>
+          <button id="clearAllBtn" class="btn button btn-danger ml-2"
+            title="Clear All Textboxes and History. Shift + Alt + C">Clear
+            All</button>
+          <button id="undoClearAllButton" class="btn button undoclearAll-btn"
+            title="Keyboard Shortcut: Shift + Alt + Q">Undo Clear All</button>
+          <button id="saveCustomPromptsBtn" class="btn button btn-info ml-2"
+            title="Save Custom Layout to File. Shift + Alt + S">Save Custom Prompts</button>
+          <button id="loadCustomPromptsBtn" class="btn button btn-success ml-2"
+            title="Load Custom Layout from File. Shift + Alt + O">Load Custom Prompts</button>
+          <button id="saveAllBtn" class="btn button btn-primary ml-2"
+            title="Save Current Layout to Local Storage. Shift + Alt + M">Save
+            All</button>
+          <button id="IncludeAllBtn" class="btn button includeAll-btn"
+            title="Toggle Include Checkbox in All Categories. Shift + Alt + P">Include All</button>
+          <button id="lockAllBtn" class="btn button lockAll-btn"
+            title="Toggle Lock Checkbox in All Categories. Shift + Alt + L">Lock
+            All</button>
+          <label class="bold-label" for="numWords">Number of Random Words:</label>
+          <input type="number" id="numWords" min="0" max="1000" value="50"
+            title="Sets Number of Random Words to be Drawn from Database.">
+          <button id="randomizeBtn" class="btn button randomize-btn"
+            title="Pull a Set Number of Random Words from Database. Shift + Alt + W">Randomize</button>
+          <label class="bold-label" for="numPrompts">Number of prompts:</label>
+          <input type="number" id="numPrompts" value="10" min="0" max="1000" class="w-16"
+            title="Sets Number of Prompts to be Generated.">
+          <button id="generateBtn" class="btn button generate-button soft-ui-button"
+            title="Randomly Generate Prompts from Categories. Shift + Alt + G">Generate</button>
+          <button id="undoRemoveButton" class="btn button undoRemove-btn"
+            title="Recover a Deleted Category. Shift + Alt + F">Undo Delete Category</button>
+          <button id="undoRemoveAllButton" class="btn button undoRemoveAll-btn"
+            title="Recover all Deleted Categories. Shift + Alt + T">Undo Delete All</button>
+          <button id="restoreDefaultLayoutBtn" class="btn button Default-btn"
+            title="Restore the Default Layout. Shift + Alt + D">Restore Default</button>
+          <button id="advancedButton" class="btn button Advanced-btn"
+            title="Adds the Usual Stable Diffusion Image Modifiers in More Containers. Shift + Alt + 4">Advanced
+            Layout</button>
+        </div>
+      </div>
+
+      <!-- Main content section -->
+      <div class="content-section">
+        <!-- Categories section -->
+        <div id="categories">
+          <!-- We'll dynamically generate category components here -->
+        </div>
+        <!-- Prompt generation section -->
+        <div class="mt-4">
+          <label class="bold-label" for="promptTemplate">Prompt Template:</label>
+          <textarea id="promptTemplate" rows="4"
+            placeholder="[SUBJECTS], wearing [CLOTHING], with [PROPS], in a beautiful [SETTINGS], [SCENE]"
+            title="Write whatever structure you wish with the [CATEGORY NAME] in square brackets. Case insensitive, so don't worry. If a [CATEGORY] is missing in the template, it will not be included in the generated prompt."
+            class="w-full soft-ui-input">[SUBJECTS], wearing [CLOTHING], with [PROPS], in a beautiful [SETTINGS], [SCENE]</textarea>
+          <p class="text-sm text-gray-400 mt-1">Reminder: Ensure the [CATEGORY] names in the template match the ones in
+            the categories section (e.g. [SUBJECTS] instead of [SUBJECT]). Don't forget to check your 'Include' sliders, if they are deactivated, the [CATEGORY] won't appear in the prompt, even if it is written in the Template.</p>
+          <p class="text-sm text-gray-400 mt-1">For a simple randomized words output, leave the Custom Prompt Template
+            empty. This will generate a list of random words from your selected categories without any specific sentence
+            structure. The words will be generated in the order of the categories from top to bottom.</p>
+        </div>
+        <!-- Generated prompts section -->
+        <div id="generatedPrompts" class="mt-4">
+          <!-- We'll display generated prompts here -->
+        </div>
+        <!-- Prompt history section -->
+        <div id="promptHistory" class="mt-4">
+          <!-- We'll display prompt history here -->
+        </div>
+        <!-- Remove All Button Container -->
+        <div id="removeAllContainer">
+          <button id="clearHistoryBtn" class="btn button btn-warning"
+            title="Empty History Container: Shift + Alt + H">Clear
+            History</button>
+          <button id="removeAllBtn" class="btn button remove-all-btn"
+            title="Delete All Categories. Shift + Alt + Y">Delete
+            All</button>
+        </div>
+      </div>
+
+      <script src="data.js"></script>
+      <script src="scripts.js"></script>
+
+</body>
+
+</html>
