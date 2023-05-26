@@ -884,6 +884,9 @@ window.addEventListener('keydown', function (event) {
     case 'Digit4': // Add category
       restoreAdvancedLayout();
       break;
+    case 'Digit2': // Add category
+      addCustomPrompts();
+      break;
   }
 });
 
