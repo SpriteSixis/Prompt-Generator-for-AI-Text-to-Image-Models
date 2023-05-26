@@ -684,6 +684,49 @@ function loadCustomPrompts() {
   input.click();
 }
 
+function addCustomPrompts() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json';
+
+  input.addEventListener('change', () => {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      const data = JSON.parse(e.target.result);
+      const categories = document.getElementById('categories');
+      data.categories.forEach((categoryData) => {
+        let category = Array.from(categories.children).find(category => category.querySelector('label').textContent.replace(':', '') === categoryData.categoryName);
+        if (!category) {
+          category = createCategoryComponent(categoryData.categoryName);
+          categories.appendChild(category);
+        }
+        const textarea = category.querySelector('textarea');
+        textarea.value += '\n' + categoryData.words; // Append the loaded text
+        // Save the initial state
+        if (!textUndoStack[textarea.id]) textUndoStack[textarea.id] = [];
+        textUndoStack[textarea.id].push(textarea.value);
+
+        category.querySelector('input[type="number"]').value = categoryData.numWords;
+        category.querySelector('.include-category').checked = categoryData.isChecked;
+        const lockCheckbox = category.querySelector('.lock-category');
+        lockCheckbox.checked = categoryData.isLocked;
+        lockCheckbox.dispatchEvent(new Event('change')); // Manually trigger the onchange event
+      });
+
+      // Load the template prompt
+      const templateInput = document.getElementById('promptTemplate');
+      templateInput.value += '\n' + data.template; // Append the loaded template prompt
+    };
+    reader.readAsText(file);
+  });
+
+  input.click();
+}
+
+
 function saveAll() {
   const categories = document.querySelectorAll('.category');
   const categoryData = Array.from(categories).map(category => {
@@ -770,6 +813,10 @@ function populateFieldsRandomly(specificCategory) {
     }
   }
 }
+
+// Add event listener to the "Add Custom Prompts" button
+const addPromptsButton = document.getElementById('addPromptsButton');
+addPromptsButton.addEventListener('click', addCustomPrompts);
 
 // Attach the populateFieldsRandomly function to the click event of the randomizeBtn
 const randomizeBtn = document.getElementById("randomizeBtn");
