@@ -310,24 +310,45 @@ input#promptTemplate::placeholder {
   mix-blend-mode: screen;
 }
 
+/* Add Custom Prompts Button */
+#addPromptsButton {
+  background-color: #00633d;
+  color: white;
+}
+
+#addPromptsButton:hover {
+  background-color: #65d8ac;
+  color: white;
+}
+
+#addPromptsButton::before {
+  background-color: rgba(19, 143, 91, 0.644);
+  mix-blend-mode: screen;
+}
+
+#addPromptsButton:hover::before {
+  background-color: rgba(64, 196, 134, 0.644);
+  mix-blend-mode: screen;
+}
+
 /* Save All Button */
 #saveAllBtn {
-  background-color: #019149;
+  background-color: #1e39d3;
   color: white;
 }
 
 #saveAllBtn:hover {
-  background-color: #80d88e;
+  background-color: #80a3d8;
   color: white;
 }
 
 #saveAllBtn::before {
-  background-color: rgba(43, 226, 165, 0.644);
+  background-color: rgba(43, 107, 226, 0.644);
   mix-blend-mode: screen;
 }
 
 #saveAllBtn:hover::before {
-  background-color: rgba(109, 240, 218, 0.644);
+  background-color: rgba(109, 144, 240, 0.644);
   mix-blend-mode: screen;
 }
 
