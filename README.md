@@ -50,7 +50,7 @@ Each category container includes:
 
 The other star of the show. In short it works a bit like Mad Libs, where you specify whatever structure you wish your prompt to have and reference the [CATEGORY] you wish in square brackets so that the prompt generator fills that space with a random word or phrase from said container.
 
-It comes with a preloaded sentence: 
+The place holder shows a suggested sentence structure: 
 
 - Seed: [SUBJECTS], [CLOTHING], with [PROPS], in a beautiful [SETTINGS], [SCENE]
 
