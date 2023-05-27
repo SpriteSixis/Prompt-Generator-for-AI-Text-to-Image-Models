@@ -71,7 +71,9 @@ You can go as detailed as you want, like with a long Deforum prompt:
 - Seed: "0": "[SUBJECTS], [POSES] in a [SETTINGS], [VISUAL STYLES], [PENS], [ARTISTS]",
     "30": "[SUBJECTS2], "lora trigger word" [POSES2] in a [SETTINGS2], [VISUAL STYLES2], [PENS2], [ARTISTS2], [EMOTIONS], [DRAWING STYLES] <LORA1.1>", "60": "[SUBJECTS3], [POSES2], in a [SETTINGS2], [VISUAL STYLES3], [ARTISTS3] --neg [CAMERAS], [ETCHINGS]", "90": "[SUBJECTS4], [PROPS], [ARTISTS]"
 - Result: "0": "a strong greek god, wrestling in a Mountain Range, Stuckist, Pastel Art, by Caravaggio",
-    "30": "caveman, taking_a_selfie standing in a futuristic city, Visual Novel, Ink, by Banksy, surprised, cel shading <SelfiesLORA1.1>", "60": "tiger, jumping, in a frozen lake, fauvist, by Pixar Animation Studios --neg Fisheye Lens, Paper Model", "90": "urban ninja, laser sword, by Leonardo Da Vinci"
+    "30": "caveman, taking_a_selfie standing in a futuristic city, Visual Novel, Ink, by Banksy, surprised, cel shading <SelfiesLORA1.1>", "60": "tiger, jumping, in a frozen lake, fauvist, by Pixar Animation Studios --neg Fisheye Lens, Paper Model", "90": "urban ninja, laser sword, by Caravaggio"
+    
+(Notice that "by Caravaggio" is repeated since in the Template Box the Category [ARTISTS] was repeated as well, you need to create new containers in case you want different results.)
     
 I added the Add to Template button so that you can save yourself the time it takes to type the name of the category, and not worry about typos either. It also has a Keyboard Shortcut that sends whatever category is active to the Template Box. Shift + Alt + T.
 
