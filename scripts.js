@@ -2,6 +2,7 @@ let removedCategories = [];
 let removedText = {}; // Object to store the removed text for each category
 let textUndoStack = {}; // Change this to an object
 let textRedoStack = {}; // Change this to an object
+let duplicateCounters = {};
 
 const templateTextArea = document.getElementById('promptTemplate');
 
@@ -40,8 +41,9 @@ function createCategoryComponent(categoryName) {
 
   const textarea = document.createElement('textarea');
   textarea.id = categoryName;
+  textarea.setAttribute('data-category', categoryName.replace(/\d+$/, ''));  // add this line
   textarea.setAttribute('rows', '3');
-  textarea.setAttribute('placeholder', `Enter ${categoryName}, separated by commas`); // Modified this line
+  textarea.setAttribute('placeholder', `Enter ${categoryName}, separated by commas`);
   textarea.classList.add('w-full', 'mt-2');
   container.appendChild(textarea);
 
@@ -73,6 +75,13 @@ function createCategoryComponent(categoryName) {
   const slider = document.createElement('div');
   slider.classList.add('slider');
   slider.title = 'Toggle to Include or Exclude Category from the Prompt Generation Operation. Shift + Alt + U'; // Set the title attribute
+
+  includeCheckbox.addEventListener('input', function () {
+    header.classList.toggle('category-header-excluded', !this.checked);
+    container.classList.toggle('category-excluded', !this.checked);
+    textarea.classList.toggle('desaturated-textarea', !this.checked);
+    optionContainer.classList.toggle('desaturated-container', !this.checked);
+  });
 
   includeLabel.appendChild(includeCheckbox);
   includeLabel.appendChild(slider);
@@ -163,6 +172,17 @@ function createCategoryComponent(categoryName) {
 
   // Append this new container to the optionContainer
   optionContainer.appendChild(elementsContainer);
+
+  // Add the duplicate button
+  const duplicateButton = document.createElement('button');
+  duplicateButton.textContent = 'Duplicate';
+  duplicateButton.classList.add('button', 'duplicate-btn'); // Set a class for the button
+  duplicateButton.title = 'Duplicate Category Container. Shift + Alt + B'; // Set the title attribute
+  duplicateButton.onclick = () => {
+    // Duplicate the category
+    duplicateCategory(container);
+  };
+  optionContainer.appendChild(duplicateButton);
 
   // Add to template button
   const addToTemplateButton = document.createElement('button');
@@ -398,7 +418,7 @@ window.addEventListener('keydown', function (event) {
         undoClearAll();
         event.preventDefault(); // Prevent the default action
         break;
-      case 'KeyF': // If 'f' is pressed
+      case 'KeyE': // If 'e' is pressed
         undoRemove();
         event.preventDefault(); // Prevent the default action
         break;
@@ -419,6 +439,14 @@ function addCategory() {
 
   // Transform to uppercase and limit to 2000 characters
   const formattedCategoryName = categoryName.toUpperCase().substring(0, 2000);
+
+  // Check if a category with the same name already exists
+  const existingCategory = document.querySelector(`textarea[data-category='${formattedCategoryName}']`);
+  if (existingCategory) {
+    // If it does, show a warning and ask the user to confirm
+    const confirmDuplicate = confirm(`A category named "${formattedCategoryName}" already exists. Are you sure you want to add another one?`);
+    if (!confirmDuplicate) return;
+  }
 
   const categoryComponent = createCategoryComponent(formattedCategoryName);
   categoriesContainer.appendChild(categoryComponent);
@@ -656,12 +684,16 @@ function loadCustomPrompts() {
     reader.onload = e => {
       const data = JSON.parse(e.target.result);
       const categories = document.getElementById('categories');
+
+      // Clear existing categories before re-creating them
+      while (categories.firstChild) {
+        categories.firstChild.remove();
+      }
+
       data.categories.forEach((categoryData) => {
-        let category = Array.from(categories.children).find(category => category.querySelector('label').textContent.replace(':', '') === categoryData.categoryName);
-        if (!category) {
-          category = createCategoryComponent(categoryData.categoryName);
-          categories.appendChild(category);
-        }
+        // Always create the category
+        let category = createCategoryComponent(categoryData.categoryName);
+        categories.appendChild(category);
         const textarea = category.querySelector('textarea');
         textarea.value = categoryData.words;
         // Save the initial state
@@ -669,6 +701,11 @@ function loadCustomPrompts() {
         textUndoStack[textarea.id].push(textarea.value);
 
         category.querySelector('input[type="number"]').value = categoryData.numWords;
+
+        const includeCheckbox = category.querySelector('.include-category');
+        includeCheckbox.checked = categoryData.isChecked;
+        includeCheckbox.dispatchEvent(new Event('input')); // Manually trigger the oninput event
+
         category.querySelector('.include-category').checked = categoryData.isChecked;
         const lockCheckbox = category.querySelector('.lock-category');
         lockCheckbox.checked = categoryData.isLocked;
@@ -700,8 +737,11 @@ function addCustomPrompts() {
       data.categories.forEach((categoryData) => {
         let category = Array.from(categories.children).find(category => category.querySelector('label').textContent.replace(':', '') === categoryData.categoryName);
         if (!category) {
-          category = createCategoryComponent(categoryData.categoryName);
+          category = createCategoryComponent(categoryData.categoryName, categoryData.duplicateCount);
           categories.appendChild(category);
+        } else {
+          const existingCount = duplicateCounters[categoryData.categoryName] || 1;
+          duplicateCounters[categoryData.categoryName] = Math.max(existingCount, categoryData.duplicateCount);
         }
         const textarea = category.querySelector('textarea');
         textarea.value += '\n' + categoryData.words; // Append the loaded text
@@ -710,6 +750,11 @@ function addCustomPrompts() {
         textUndoStack[textarea.id].push(textarea.value);
 
         category.querySelector('input[type="number"]').value = categoryData.numWords;
+
+        const includeCheckbox = category.querySelector('.include-category');
+        includeCheckbox.checked = categoryData.isChecked;
+        includeCheckbox.dispatchEvent(new Event('input')); // Manually trigger the oninput event
+
         category.querySelector('.include-category').checked = categoryData.isChecked;
         const lockCheckbox = category.querySelector('.lock-category');
         lockCheckbox.checked = categoryData.isLocked;
@@ -725,7 +770,6 @@ function addCustomPrompts() {
 
   input.click();
 }
-
 
 function saveAll() {
   const categories = document.querySelectorAll('.category');
@@ -751,16 +795,23 @@ window.addEventListener('load', () => {
 
   const data = JSON.parse(savedData);
   const categories = document.getElementById('categories');
+
+  // Clear existing categories before re-creating them
+  while (categories.firstChild) {
+    categories.firstChild.remove();
+  }
+
   data.categories.forEach((categoryData) => {
-    let category = Array.from(categories.children).find(category => category.querySelector('label').textContent.replace(':', '') === categoryData.categoryName);
-    if (!category) {
-      // If the category does not exist, create it
-      category = createCategoryComponent(categoryData.categoryName);
-      categories.appendChild(category);
-    }
+    // Always create the category
+    let category = createCategoryComponent(categoryData.categoryName);
+    categories.appendChild(category);
     category.querySelector('textarea').value = categoryData.words;
     category.querySelector('input[type="number"]').value = categoryData.numWords;
-    category.querySelector('.include-category').checked = categoryData.isChecked;
+
+    const includeCheckbox = category.querySelector('.include-category');
+    includeCheckbox.checked = categoryData.isChecked;
+    includeCheckbox.dispatchEvent(new Event('input')); // Manually trigger the oninput event
+
     const lockCheckbox = category.querySelector('.lock-category');
     lockCheckbox.checked = categoryData.isLocked;
     lockCheckbox.dispatchEvent(new Event('change')); // Manually trigger the onchange event
@@ -768,7 +819,6 @@ window.addEventListener('load', () => {
     // Add initial state to undo stack for each text area
     if (!textUndoStack[categoryData.categoryName]) textUndoStack[categoryData.categoryName] = [];
     textUndoStack[categoryData.categoryName].push(categoryData.words);
-
   });
 
   // Load the template prompt
@@ -779,14 +829,18 @@ function populateFieldsRandomly(specificCategory) {
   // Get the number of words to insert from the new input field
   const numWordsToInsert = document.getElementById('numWords').value;
 
+  // Extract the base category name without the numeric suffix if specificCategory is defined
+  let baseCategory = specificCategory ? specificCategory.replace(/\d+$/, '') : undefined;
+
   // Loop through each key in the data object
   for (const key in data) {
     // If a specific category is specified, and this isn't it, skip it
     if (specificCategory !== undefined && key !== specificCategory) continue;
 
     // Get the corresponding textarea element by ID
-    const textarea = document.getElementById(key);
-    if (textarea) {
+    const textareas = document.querySelectorAll(`textarea[data-category='${key}']`);
+
+    textareas.forEach(textarea => {
       const categoryElement = textarea.closest('.category');
       const lockCheckbox = categoryElement.querySelector('.lock-category');
       const includeCheckbox = categoryElement.querySelector('.include-category');
@@ -810,7 +864,8 @@ function populateFieldsRandomly(specificCategory) {
         if (!textUndoStack[textarea.id]) textUndoStack[textarea.id] = [];
         textUndoStack[textarea.id].push(textarea.value);
       }
-    }
+    });
+
   }
 }
 
@@ -838,6 +893,40 @@ document.addEventListener('keydown', function (event) {
   // Shift + Alt + 'Y' was pressed
   if (event.shiftKey && event.altKey && event.key.toLowerCase() === 'y') {
     removeAllCategories();
+  }
+});
+
+function addAllToTemplate() {
+  const categoriesContainer = document.getElementById('categories');
+
+  // Fetch current template
+  let currentTemplate = templateTextArea.value;
+
+  // Loop over all category containers
+  for (const categoryContainer of categoriesContainer.children) {
+    // Check if the include checkbox is checked
+    const includeCheckbox = categoryContainer.querySelector('.include-category');
+
+    // If the checkbox is checked, append the category to the template
+    if (includeCheckbox && includeCheckbox.checked) {
+      // Find the category name header in the container
+      const categoryName = categoryContainer.querySelector('.category-header').innerText;
+
+      // Append the category name to the template
+      currentTemplate += `, [${categoryName}]`;
+    }
+  }
+
+  // Set the updated template back to the textarea
+  templateTextArea.value = currentTemplate;
+}
+
+document.getElementById('add-all-template-btn').addEventListener('click', addAllToTemplate);
+
+document.addEventListener('keydown', function (event) {
+  // Shift + Alt + 'A' was pressed
+  if (event.shiftKey && event.altKey && event.key.toLowerCase() === 'a') {
+    addAllToTemplate();
   }
 });
 
@@ -875,7 +964,7 @@ window.addEventListener('keydown', function (event) {
     case 'KeyM': // Save All
       saveAll();
       break;
-    case 'KeyA': // Add category
+    case 'KeyN': // Add category
       addCategory();
       break;
     case 'KeyD': // Add category
@@ -902,7 +991,6 @@ function toggleLockAll() {
   });
 
 }
-
 function toggleIncludeAll() {
   const categories = document.querySelectorAll('.category');
   const firstIncludeCheckbox = categories[0].querySelector('.include-category');
@@ -911,6 +999,7 @@ function toggleIncludeAll() {
   categories.forEach(category => {
     const includeCheckbox = category.querySelector('.include-category');
     includeCheckbox.checked = includeAll;
+    includeCheckbox.dispatchEvent(new Event('input')); // Manually trigger the oninput event
   });
 }
 
@@ -1017,8 +1106,11 @@ document.addEventListener('keydown', function (event) {
     const removeButton = category.querySelector('.category-remove-button');
     if (!removeButton) return; // Ignore if there is no remove button in the category
 
-    // Store the removed category
-    removedCategories.push(category);
+    // Get the index of the removed category
+    const index = Array.from(categoriesContainer.children).indexOf(category);
+
+    // Store the removed category and its original index
+    removedCategories.push({ category: category, index: index });
 
     // Remove the category
     category.remove();
@@ -1046,6 +1138,76 @@ document.addEventListener('keydown', function (event) {
     templateTextArea.value = currentTemplate;
   }
 });
+
+document.addEventListener('keydown', function (event) {
+  // Shift + Alt + 'B' was pressed
+  if (event.shiftKey && event.altKey && event.key.toLowerCase() === 'b') {
+    const textarea = document.activeElement;
+    if (textarea.tagName !== 'TEXTAREA') return; // Ignore if the focused element is not a textarea
+
+    const category = textarea.closest('.category');
+    if (!category) return; // Ignore if the textarea is not inside a category
+
+    // Duplicate the active category
+    duplicateCategory(category);
+  }
+});
+
+function duplicateCategory(activeCategory) {
+  // Extract the original category name
+  let originalCategoryName = activeCategory.querySelector('.category-header').textContent;
+
+  let duplicateCategoryName = originalCategoryName;
+  let duplicateCount = 2;
+
+  // Create a list of all existing category names
+  let existingCategoryNames = Array.from(document.querySelectorAll('.category-header')).map(header => header.textContent);
+
+  // Continue incrementing the duplicate count until we find a name that doesn't exist
+  while (existingCategoryNames.includes(duplicateCategoryName + duplicateCount)) {
+    duplicateCount++;
+  }
+
+  duplicateCategoryName = originalCategoryName + duplicateCount;
+
+  // Create a new category with the duplicated name
+  const categoryComponent = createCategoryComponent(duplicateCategoryName);
+
+  // Copy the contents of the original category to the duplicated category
+  let originalTextArea = activeCategory.querySelector('textarea');
+  let duplicateTextArea = categoryComponent.querySelector('textarea');
+  duplicateTextArea.value = originalTextArea.value;
+
+  // Copy the state of the 'include' and 'lock' checkboxes
+  let originalIncludeCheckbox = activeCategory.querySelector('.include-category');
+  let duplicateIncludeCheckbox = categoryComponent.querySelector('.include-category');
+  duplicateIncludeCheckbox.checked = originalIncludeCheckbox.checked;
+
+  let originalLockCheckbox = activeCategory.querySelector('.lock-category');
+  let duplicateLockCheckbox = categoryComponent.querySelector('.lock-category');
+  duplicateLockCheckbox.checked = originalLockCheckbox.checked;
+
+  // Trigger the onchange event for the lock checkbox
+  duplicateLockCheckbox.dispatchEvent(new Event('change'));
+  duplicateIncludeCheckbox.dispatchEvent(new Event('input'));
+
+  // Find the index of the active category
+  let activeCategoryIndex = Array.from(categoriesContainer.children).indexOf(activeCategory);
+
+  // Find the position of the last duplicate of the active category
+  let insertIndex = activeCategoryIndex + 1;
+  while (insertIndex < categoriesContainer.children.length &&
+    categoriesContainer.children[insertIndex].querySelector('.category-header').textContent.startsWith(originalCategoryName)) {
+    insertIndex++;
+  }
+
+  // Insert the new category at the correct position
+  if (insertIndex < categoriesContainer.children.length) {
+    categoriesContainer.insertBefore(categoryComponent, categoriesContainer.children[insertIndex]);
+  } else {
+    categoriesContainer.appendChild(categoryComponent);
+  }
+}
 
 function restoreDefaultLayoutWithTemplate() {
   restoreDefaultLayout();
