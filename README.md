@@ -107,7 +107,7 @@ And these shortcuts respond to whatever category container is currently active.
 
 ## Undo
 
-I've implemented as many undo features that I could think of so that you can work without fear and let your creativity loose. I have tested it in many ways but I'm sure there are some bugs here and there still, so please be mindful and take advantage of the Save Functions as well to avoid loosing hours of work.
+I've implemented as many undo features that I could think of so that you can work without fear and let your creativity loose. I have tested it in many ways but I'm sure there are some bugs here and there still, so please be mindful and take advantage of the Save Functions as well to avoid losing hours of work.
 
 There is also a regular "Ctrl + Z" undo and "Ctrl + Y" redo feature for when you are typing or deleting text in the textboxes but again, please tell me if there are any issues with it and I'll see to fix them as soon as I can.
 
