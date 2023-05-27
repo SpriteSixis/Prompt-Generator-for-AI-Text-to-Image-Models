@@ -20,7 +20,7 @@
       <div class="button-section">
         <div class="button-group mt-4">
           <button id="addCategoryBtn" class="btn button btn-primary ml-2"
-            title="Create Category Container. Shift + Alt + A">Add
+            title="Create Category Container. Shift + Alt + N">New
             Category</button>
           <button id="clearAllBtn" class="btn button btn-danger ml-2"
             title="Clear All Textboxes and History. Shift + Alt + C">Clear
@@ -52,9 +52,9 @@
           <button id="generateBtn" class="btn button generate-button soft-ui-button"
             title="Randomly Generate Prompts from Categories. Shift + Alt + G">Generate</button>
           <button id="undoRemoveButton" class="btn button undoRemove-btn"
-            title="Recover a Deleted Category. Shift + Alt + F">Undo Delete Category</button>
-          <button id="undoRemoveAllButton" class="btn button undoRemoveAll-btn"
-            title="Recover all Deleted Categories. Shift + Alt + T">Undo Delete All</button>
+            title="Recover a Deleted Category. Shift + Alt + E">Undo Delete Category</button>
+          <button id="add-all-template-btn" class="btn button add-all-template-btn"
+            title="Adds All Included Categories to Template. Shift + Alt + A">Add All to Template</button>
           <button id="restoreDefaultLayoutBtn" class="btn button Default-btn"
             title="Restore the Default Layout. Shift + Alt + D">Restore Default</button>
           <button id="advancedButton" class="btn button Advanced-btn"
@@ -71,16 +71,21 @@
         </div>
         <!-- Prompt generation section -->
         <div class="mt-4">
-          <label class="bold-label" for="promptTemplate">Prompt Template:</label>
+          <label class="bold-label" for="promptTemplate">Custom Prompt Template:</label>
           <textarea id="promptTemplate" rows="4"
             placeholder="[SUBJECTS], wearing [CLOTHING], with [PROPS], in a beautiful [SETTINGS], [SCENE]"
             title="Write whatever structure you wish with the [CATEGORY NAME] in square brackets. Case insensitive, so don't worry. If a [CATEGORY] is missing in the template, it will not be included in the generated prompt."
-            class="w-full soft-ui-input">[SUBJECTS], wearing [CLOTHING], with [PROPS], in a beautiful [SETTINGS], [SCENE]</textarea>
-          <p class="text-sm text-gray-400 mt-1">Reminder: Ensure the [CATEGORY] names in the template match the ones in
-            the categories section (e.g. [SUBJECTS] instead of [SUBJECT]). Don't forget to check your 'Include' sliders, if they are deactivated, the [CATEGORY] won't appear in the prompt, even if it is written in the Template.</p>
-          <p class="text-sm text-gray-400 mt-1">For a simple randomized words output, leave the Custom Prompt Template
-            empty. This will generate a list of random words from your selected categories without any specific sentence
-            structure. The words will be generated in the order of the categories from top to bottom.</p>
+            class="w-full soft-ui-input"></textarea>
+          <ul class="text-sm text-gray-400 mt-1">
+            <li>Reminder: Ensure the <b>[CATEGORY]</b> names in the template match the ones in the categories section (e.g.
+              <b>[SUBJECTS]</b> instead of <b>[SUBJECT]</b>).</li>
+            <li>Don't forget to check your <b>'Include'</b> sliders, if they are deactivated, the <b>[CATEGORY]</b> won't appear in
+              the prompt, even if it is written in the Template.</li>
+            <li>Finally, don't forget to check that the <b>Number of Words</b> in your <b>[CATEGORY]</b> container is at least 1.</li>
+            <li>For a simple randomized words output, leave the Custom Prompt Template
+              empty. This will generate a list of random words from your selected categories without any specific sentence
+              structure. The words will be generated in the order of the categories from top to bottom.</li>
+          </ul>
         </div>
         <!-- Generated prompts section -->
         <div id="generatedPrompts" class="mt-4">
@@ -92,6 +97,8 @@
         </div>
         <!-- Remove All Button Container -->
         <div id="removeAllContainer">
+          <button id="undoRemoveAllButton" class="btn button undoRemoveAll-btn"
+            title="Recover all Deleted Categories. Shift + Alt + T">Undo Delete All</button>
           <button id="clearHistoryBtn" class="btn button btn-warning"
             title="Empty History Container: Shift + Alt + H">Clear
             History</button>
