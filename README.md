@@ -25,6 +25,7 @@ Each category container includes:
 - **Include Checkbox**: Really important, it controls whether the category is considered when generating prompts.
 - **Lock Checkbox**: Prevents editing of the category content and shields it from being modified by accidental typing, the **Clear All** button or the **Randomize** button.
 - **Number of Words**: Specifies how many words (or phrases separated by commas) are picked from the category.
+- **Duplicate Category Button**: Duplicates the category including whatever text is there as well as the state of the checkboxes.
 - **Add to Template Button**: Adds the category to the custom template. (More on this below.)
 - **Delete Category Button**: Removes the category from the list. (There is an undo button for this in the sidebar.)
 
@@ -40,7 +41,8 @@ Each category container includes:
 - **Include All and Lock All Buttons**: Toggles inclusion and editing for all categories.
 - **Randomize and Generate Buttons**: Populates categories with random words and generates prompts, respectively.
 - **Generate Button**: The star of the show, which makes everything happen. (Shift + Alt+ G)
-- **Undo Delete Category and Undo Delete All Category Containers Buttons**: Restores deleted category containers.
+- **Undo Delete Category Button**: Restores deleted category containers.
+- **Add All to Template Button**: Adds the [CATEGORY] name of all the containers with an active include checkbox to the template.
 - **Restore Default Button**: Returns the application to its original state.
 - **Advanced Layout Button**: Adds category containers pre-filled with common Stable Diffusion modifiers.
 
@@ -73,7 +75,7 @@ You can go as detailed as you want, like with a long Deforum prompt:
 - Result: "0": "a strong greek god, wrestling in a Mountain Range, Stuckist, Pastel Art, by Caravaggio",
     "30": "caveman, taking_a_selfie standing in a futuristic city, Visual Novel, Ink, by Banksy, surprised, cel shading <SelfiesLORA1.1>", "60": "tiger, jumping, in a frozen lake, fauvist, by Pixar Animation Studios --neg Fisheye Lens, Paper Model", "90": "urban ninja, laser sword, by Caravaggio"
     
-(Notice that "by Caravaggio" is repeated since in the Template Box the Category [ARTISTS] was repeated as well, you need to create new containers in case you want different results.)
+(Notice that "by Caravaggio" is repeated since in the Template Box the Category [ARTISTS] was repeated as well, you need to duplicate the container so you get [ARTISTS2], [ARTISTS3], etc. or create new containers in case you want different results.)
     
 I added the Add to Template button so that you can save yourself the time it takes to type the name of the category, and not worry about typos either. It also has a Keyboard Shortcut that sends whatever category is active to the Template Box. Shift + Alt + T.
 
@@ -83,7 +85,7 @@ You can also leave the Prompt Template box empty if you just want to generate ra
 
 Basically everything has a keyboard shortcut so that you can work as efficiently as possible. I'll list them below, but you can also just hover over whatever button or slider you want and see the title with their respective shortcut appear.
 
-- Add Category: Shift + Alt + A
+- Add Category: Shift + Alt + N
 - Clear All: Shift + Alt + C
 - Undo Clear All: Shift + Alt + Q
 - Save Custom Prompts: Shift + Alt + S
@@ -94,16 +96,18 @@ Basically everything has a keyboard shortcut so that you can work as efficiently
 - Lock All: Shift + Alt + L
 - Randomize: Shift + Alt + W
 - Generate: Shift + Alt + G
-- Undo Delete Category: Shift + Alt + F
-- Undo Delete All: Shift + Alt + T
+- Undo Delete Category: Shift + Alt + E 
+- Add All to Template: Shift + Alt + A
 - Restore Default: Shift + Alt + D
 - Advanced Layout: Shift + Alt + 4
+- Undo Delete All: Shift + Alt + 5
 - Clear History: Shift + Alt + H
 - Delete All Category Containers: Shift + Alt + Y
 
 And these shortcuts respond to whatever category container is currently active.
 - Include Active Container: Shift + Alt + U
 - Lock Active Container: Shift + Alt + K
+- Duplicate Active Container: Shift + Alt + B
 - Add Active Category Label to Custom Template Box: Shift + Alt + T
 - Delete Active Category Container: Shift + Alt + X
 
