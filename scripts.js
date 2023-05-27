@@ -422,7 +422,7 @@ window.addEventListener('keydown', function (event) {
         undoRemove();
         event.preventDefault(); // Prevent the default action
         break;
-      case 'Digit5': // If '5' is pressed
+      case 'Digit5': // If 't' is pressed
         undoRemoveAll();
         event.preventDefault(); // Prevent the default action
         break;
