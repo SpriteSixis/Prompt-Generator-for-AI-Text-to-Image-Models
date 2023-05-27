@@ -18,7 +18,7 @@ body {
   justify-content: center;
   align-items: center;
   height: 45px;
-  background-color: #32e2df2a;
+  background-color: #32e2df70;
   border-radius: 8px;
   color: white;
   text-align: center;
@@ -29,6 +29,14 @@ body {
 
 .category-header:hover {
   background-color:#1bece9c5;
+}
+
+.category-header-excluded {
+  background-color: rgb(36, 41, 44);
+}
+
+.category-header-excluded:hover {
+  background-color: rgb(57, 59, 61);
 }
 
 .hidden-label {
@@ -96,6 +104,10 @@ input#promptTemplate::placeholder {
   margin-bottom: 1rem;
 }
 
+.category-excluded {
+  border: 2px solid rgb(57, 59, 61);
+}
+
 .category h2 {
   margin-bottom: 0.5rem;
 }
@@ -107,6 +119,14 @@ input#promptTemplate::placeholder {
   border: none;
   color: white;
   border-radius: 10px;
+}
+
+.desaturated-textarea {
+  filter: grayscale(80%); /* Apply grayscale filter to make the color desaturated */
+}
+
+.desaturated-container {
+  filter: grayscale(100%); /* Apply grayscale filter to make the color desaturated */
 }
 
 .locked-textarea {
@@ -136,8 +156,8 @@ input#promptTemplate::placeholder {
   /* This will put maximum space between items */
   align-items: center;
   flex-direction: row;
-  gap: 50px;
-  margin-top: 12px;
+  gap: 1px;
+  margin-top: 10px;
   font-weight: bold;
   /* Make the text bold */
   font-family: "Arial", sans-serif;
@@ -146,7 +166,7 @@ input#promptTemplate::placeholder {
 
 .elements-container {
   display: flex;
-  gap: 50px;
+  gap: 15px;
   /* or whatever your preferred gap is */
 }
 
@@ -155,12 +175,18 @@ input#promptTemplate::placeholder {
   background: #284662;
   border: none;
   color: white;
-  width: 70px;
+  width: 80px;
   text-align: center;
 }
 
 .bold-label {
   font-weight: bold;
+}
+
+.elements-container,
+.spacing-class,
+.option-container {
+  align-items: center;
 }
 
 .button {
@@ -170,7 +196,7 @@ input#promptTemplate::placeholder {
   background-color: #6f14ac;
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 8px 18px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
@@ -203,6 +229,79 @@ input#promptTemplate::placeholder {
 
 .button:active {
   outline: none;
+}
+
+
+.remove-btn {
+  font-weight: bold;
+  width: 18%;
+  background-color: #eb0e61;
+}
+
+.remove-btn:hover {
+  /* Add hover styles here */
+  /* For example, change the background color */
+  background-color: #ec80a9;
+}
+
+.remove-btn::before {
+  background-color: rgba(255, 71, 255, 0.644);
+  mix-blend-mode: screen;
+  /* Adjust the color and transparency */
+}
+
+.remove-btn:hover::before {
+  background-color: rgba(230, 134, 174, 0.644);
+  /* Adjust the color and transparency */
+  mix-blend-mode: screen;
+}
+
+.add-template-btn {
+  font-weight: bold;
+  width: 18%;
+  background-color: #04b387;
+}
+
+.add-template-btn:hover {
+  /* Add hover styles here */
+  /* For example, change the background color */
+  background-color: #80ecec;
+}
+
+.add-template-btn::before {
+  background-color: rgba(13, 173, 125, 0.644);
+  mix-blend-mode: screen;
+  /* Adjust the color and transparency */
+}
+
+.add-template-btn:hover::before {
+  background-color: rgba(134, 230, 201, 0.644);
+  /* Adjust the color and transparency */
+  mix-blend-mode: screen;
+}
+
+.duplicate-btn {
+  font-weight: bold;
+  width: 18%;
+  background-color: #0490b3;
+}
+
+.duplicate-btn:hover {
+  /* Add hover styles here */
+  /* For example, change the background color */
+  background-color: #80cdec;
+}
+
+.duplicate-btn::before {
+  background-color: rgba(13, 141, 173, 0.644);
+  mix-blend-mode: screen;
+  /* Adjust the color and transparency */
+}
+
+.duplicate-btn:hover::before {
+  background-color: rgba(134, 211, 230, 0.644);
+  /* Adjust the color and transparency */
+  mix-blend-mode: screen;
 }
 
 /* Add Category Button */
@@ -481,24 +580,24 @@ input#promptTemplate::placeholder {
   mix-blend-mode: screen;
 }
 
-/* Undo Remove All Button */
-#undoRemoveAllButton {
-  background-color: #0964ec;
+/* Add All to Template Button */
+#add-all-template-btn {
+  background-color: #039481;
   color: white;
 }
 
-#undoRemoveAllButton:hover {
-  background-color: #5d9ef3;
+#add-all-template-btn:hover {
+  background-color: #5decd9;
   color: white;
 }
 
-#undoRemoveAllButton::before {
-  background-color: rgba(71, 172, 255, 0.644);
+#add-all-template-btn::before {
+  background-color: #00b6b6c4;
   mix-blend-mode: screen;
 }
 
-#undoRemoveAllButton:hover::before {
-  background-color: rgba(96, 205, 255, 0.644);
+#add-all-template-btn:hover::before {
+  background-color: rgba(91, 217, 226, 0.644);
   mix-blend-mode: screen;
 }
 
@@ -573,59 +672,33 @@ input#promptTemplate::placeholder {
   /* Highlight the drop target with a border */
 }
 
-.remove-btn {
-  font-weight: bold;
-  width: 20%;
-  background-color: #eb0e61;
-}
-
-.remove-btn:hover {
-  /* Add hover styles here */
-  /* For example, change the background color */
-  background-color: #ec80a9;
-}
-
-.remove-btn::before {
-  background-color: rgba(255, 71, 255, 0.644);
-  mix-blend-mode: screen;
-  /* Adjust the color and transparency */
-}
-
-.remove-btn:hover::before {
-  background-color: rgba(230, 134, 174, 0.644);
-  /* Adjust the color and transparency */
-  mix-blend-mode: screen;
-}
-
-.add-template-btn {
-  font-weight: bold;
-  width: 20%;
-  background-color: #04b387;
-}
-
-.add-template-btn:hover {
-  /* Add hover styles here */
-  /* For example, change the background color */
-  background-color: #80ecec;
-}
-
-.add-template-btn::before {
-  background-color: rgba(13, 173, 125, 0.644);
-  mix-blend-mode: screen;
-  /* Adjust the color and transparency */
-}
-
-.add-template-btn:hover::before {
-  background-color: rgba(134, 230, 201, 0.644);
-  /* Adjust the color and transparency */
-  mix-blend-mode: screen;
-}
-
 #removeAllContainer {
   display: flex;
   justify-content: flex-end;
 }
 
+/* Undo Remove All Button */
+#undoRemoveAllButton {
+  margin-top: 20px;
+  max-width: 15%;
+  background-color: #06ad46;
+  color: white;
+}
+
+#undoRemoveAllButton:hover {
+  background-color: #5df3ba;
+  color: white;
+}
+
+#undoRemoveAllButton::before {
+  background-color: rgba(15, 177, 64, 0.644);
+  mix-blend-mode: screen;
+}
+
+#undoRemoveAllButton:hover::before {
+  background-color: rgba(96, 255, 202, 0.644);
+  mix-blend-mode: screen;
+}
 
 /* Clear History Button */
 #clearHistoryBtn {
@@ -757,6 +830,7 @@ textarea#promptTemplate {
 }
 
 #numWords {
+  width: 80px;
   border-radius: 7px;
   text-align: center;
   background-color: #284662;
