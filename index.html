@@ -77,13 +77,18 @@
             title="Write whatever structure you wish with the [CATEGORY NAME] in square brackets. Case insensitive, so don't worry. If a [CATEGORY] is missing in the template, it will not be included in the generated prompt."
             class="w-full soft-ui-input"></textarea>
           <ul class="text-sm text-gray-400 mt-1">
-            <li>Reminder: Ensure the <b>[CATEGORY]</b> names in the template match the ones in the categories section (e.g.
-              <b>[SUBJECTS]</b> instead of <b>[SUBJECT]</b>).</li>
-            <li>Don't forget to check your <b>'Include'</b> sliders, if they are deactivated, the <b>[CATEGORY]</b> won't appear in
+            <li>Reminder: Ensure the <b>[CATEGORY]</b> names in the template match the ones in the categories section
+              (e.g.
+              <b>[SUBJECTS]</b> instead of <b>[SUBJECT]</b>).
+            </li>
+            <li>Don't forget to check your <b>'Include'</b> sliders, if they are deactivated, the <b>[CATEGORY]</b>
+              won't appear in
               the prompt, even if it is written in the Template.</li>
-            <li>Finally, don't forget to check that the <b>Number of Words</b> in your <b>[CATEGORY]</b> container is at least 1.</li>
+            <li>Finally, don't forget to check that the <b>Number of Words</b> in your <b>[CATEGORY]</b> container is at
+              least 1.</li>
             <li>For a simple randomized words output, leave the Custom Prompt Template
-              empty. This will generate a list of random words from your selected categories without any specific sentence
+              empty. This will generate a list of random words from your selected categories without any specific
+              sentence
               structure. The words will be generated in the order of the categories from top to bottom.</li>
           </ul>
         </div>
@@ -97,19 +102,43 @@
         </div>
         <!-- Remove All Button Container -->
         <div id="removeAllContainer">
-          <button id="undoRemoveAllButton" class="btn button undoRemoveAll-btn"
-            title="Recover all Deleted Categories. Shift + Alt + 5">Undo Delete All</button>
-          <button id="clearHistoryBtn" class="btn button btn-warning"
-            title="Empty History Container: Shift + Alt + H">Clear
-            History</button>
-          <button id="removeAllBtn" class="btn button remove-all-btn"
-            title="Delete All Categories. Shift + Alt + Y">Delete
-            All</button>
+          <div id="supportButtonsContainer">
+            <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+            <script
+              type='text/javascript'>kofiwidget2.init('Support Me on Ko-fi', '#29abe0', 'N4N5LOGJS'); kofiwidget2.draw();</script>
+            <a href="https://github.com/SpriteSixis/Prompt-Generator-for-AI-Text-to-Image-Models" target="_blank"
+              id="customGithubButton">
+              <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="github logo"
+                style="width: 20px; height: 20px;" />
+              Star
+            </a>
+          </div>
+          <div id="otherButtonsContainer">
+            <button id="undoRemoveAllButton" class="btn button undoRemoveAll-btn"
+              title="Recover all Deleted Categories. Shift + Alt + 5">Undo Delete All</button>
+            <button id="clearHistoryBtn" class="btn button btn-warning"
+              title="Empty History Container: Shift + Alt + H">Clear
+              History</button>
+            <button id="removeAllBtn" class="btn button remove-all-btn"
+              title="Delete All Categories. Shift + Alt + Y">Delete
+              All</button>
+          </div>
         </div>
-      </div>
+        <div id="footer">
+          <p>
+            Version 1.0.0.
+            This site was put together by <a href="https://github.com/SpriteSixis" target="_blank"
+              style="color: gray;">Sprite6</a>.
+            Licensed under the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank"
+              style="color: gray;">GNU GPLv3</a>.
+            For any queries, suggestions, or issue reports, please feel free to reach out on GitHub.
+          </p>
+        </div>
 
-      <script src="data.js"></script>
-      <script src="scripts.js"></script>
+        <script src="data.js"></script>
+        <script src="scripts.js"></script>
+        <!-- Place this tag in your head or just before your close body tag. -->
+        <script async defer src="https://buttons.github.io/buttons.js"></script>
 
 </body>
 
