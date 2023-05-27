@@ -673,14 +673,38 @@ input#promptTemplate::placeholder {
 }
 
 #removeAllContainer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+#customGithubButton {
+  font-weight: bold;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: rgb(36, 36, 36);
+  padding: 8px 65px;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+#supportButtonsContainer {
+  display: flex;
+  align-items: center;
+}
+
+
+#otherButtonsContainer {
   display: flex;
   justify-content: flex-end;
 }
 
+#undoRemoveAllButton, #clearHistoryBtn, #removeAllBtn {
+  min-width: 180px;
+}
+
 /* Undo Remove All Button */
 #undoRemoveAllButton {
-  margin-top: 20px;
-  max-width: 15%;
   background-color: #06ad46;
   color: white;
 }
@@ -702,8 +726,6 @@ input#promptTemplate::placeholder {
 
 /* Clear History Button */
 #clearHistoryBtn {
-  margin-top: 20px;
-  max-width: 15%;
   background-color: #da5700;
   color: white;
 }
@@ -725,8 +747,6 @@ input#promptTemplate::placeholder {
 
 /* Remove All Button */
 #removeAllBtn {
-  margin-top: 20px;
-  max-width: 15%;
   background-color: #8b002e;
   color: white;
 }
@@ -852,6 +872,13 @@ textarea#promptTemplate {
   /* This will vertically center align the textBox and copyButton */
   gap: 1rem;
   /* This will add some space between the textBox and copyButton */
+}
+
+#footer {
+  text-align: center;
+  color: lightgray;
+  font-size: 14px;
+  padding: 20px;
 }
 
 .soft-ui-input {
