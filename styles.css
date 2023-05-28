@@ -186,7 +186,7 @@ input#promptTemplate::placeholder {
 .elements-container,
 .spacing-class,
 .option-container {
-  align-items: center;
+  align-items: baseline;
 }
 
 .button {
@@ -693,6 +693,9 @@ input#promptTemplate::placeholder {
   align-items: center;
 }
 
+.btn-container {
+  padding-right: 5px;
+}
 
 #otherButtonsContainer {
   display: flex;
