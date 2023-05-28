@@ -125,6 +125,10 @@ Tested primarily in Windows with the latest version of Chrome. Some light testin
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
+## Credits
+
+The slider used on this website is based on the Quiet Swan 35 slider developed by TimTrayler. You can find the original slider [here](https://uiverse.io/TimTrayler/quiet-swan-35).
+
 ## License
 
 [GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
