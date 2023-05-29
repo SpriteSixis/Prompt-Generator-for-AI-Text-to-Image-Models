@@ -1,5 +1,5 @@
 # Prompt-Generator-for-AI-Text-to-Image-Models
-A simple, modular, customizable app to help you generate prompts quickly and easily for Stable Diffusion, Midjourney, and Dall-E 2.
+Try it here! [AI Prompt Generator](aipromptgenerator.art). A simple, modular, customizable app to help you generate prompts quickly and easily for [Stable Diffusion](https://stability.ai/), [Midjourney](https://www.midjourney.com/home/?callbackUrl=%2Fapp%2F), and [Dall-E 2](https://openai.com/product/dall-e-2).
 
 # Prompt Generator
 
@@ -7,7 +7,7 @@ A versatile and easy-to-use tool designed to generate intriguing random custom p
 
 ## Quick Start
 
-Open `index.html` in your browser to start creating prompts! If you prefer not to start from scratch, click the **Randomize** button to populate the fields with words from a default database (which might be updated in the near future). 
+Visit [AI Prompt Generator](aipromptgenerator.art) or download the code and open `index.html` in your browser to start creating prompts! If you prefer not to start from scratch, click the **Randomize** button to populate the fields with words from a default database (which might be updated in the near future). 
 
 ## How It Works
 
