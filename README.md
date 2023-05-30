@@ -140,32 +140,39 @@ The models I used are all homemade blends from other maintstream models, but the
 
 Basically everything has a keyboard shortcut so that you can work as efficiently as possible. I'll list them below, but you can also just hover over whatever button or slider you want and see the title with their respective shortcut appear.
 
-- **Add Category:** `Shift + Alt + N`
-- **Clear All:** `Shift + Alt + C`
-- **Undo Clear:** `All: Shift + Alt + Q`
-- **Save Custom Prompts:** `Shift + Alt + S`
-- **Load Custom Prompts:** `Shift + Alt + O`
-- **Add Custom Prompts:** `Shift + Alt + 2`
-- **Save All:** `Shift + Alt + M`
-- **Include All:** `Shift + Alt + P`
-- **Lock All:** `Shift + Alt + L`
-- **Randomize:** `Shift + Alt + W`
-- **Generate:** `Shift + Alt + G`
-- **Undo Delete Category:** `Shift + Alt + E`
-- **Add All to Template:** `Shift + Alt + A`
-- **Restore Default:** `Shift + Alt + D`
-- **Advanced Layout:** `Shift + Alt + 4`
-- **Undo Delete All:** `Shift + Alt + 5`
-- **Clear History:** `Shift + Alt + H`
-- **Delete All Category Containers:** `Shift + Alt + Y`
-- **Top Secret Dev Code to Empty Everything including the Custom Template Box:** `Shift + Alt + 0`
+| Function                   | Shortcut                 |
+|----------------------------|--------------------------|
+| Add Category               | `Shift + Alt + N`          |
+| Clear All                  | `Shift + Alt + C`          |
+| Undo Clear All             | `Shift + Alt + Q`          |
+| Save Custom Prompts        | `Shift + Alt + S`          |
+| Load Custom Prompts        | `Shift + Alt + O`          |
+| Add Custom Prompts         | `Shift + Alt + 2`          |
+| Save All                   | `Shift + Alt + M`          |
+| Include All                | `Shift + Alt + P`          |
+| Lock All                   | `Shift + Alt + L`          |
+| Randomize                  | `Shift + Alt + W`          |
+| Generate                   | `Shift + Alt + G`          |
+| Undo Delete Category       | `Shift + Alt + E`          |
+| Add All to Template        | `Shift + Alt + A`          |
+| Restore Default            | `Shift + Alt + D`          |
+| Advanced Layout            | `Shift + Alt + 4`          |
+| Undo Delete All            | `Shift + Alt + 5`          |
+| Clear History              | `Shift + Alt + H`          |
+| Delete All Category Containers | `Shift + Alt + Y`       |
+| Top Secret Dev Code to Empty Everything | `Shift + Alt + 0` |
 
 And these shortcuts respond to whatever category container is currently active.
-- **Include Active Container:** `Shift + Alt + U`
-- **Lock Active Container:** `Shift + Alt + K`
-- **Duplicate Active Container:** `Shift + Alt + B`
-- **Add Active Category Label to Custom Template Box:** `Shift + Alt + T`
-- **Delete Active Category Container:** `Shift + Alt + X`
+
+| Function                   | Shortcut                 |
+|----------------------------|--------------------------|
+| Include Active Container   | `Shift + Alt + N`          |
+| Lock Active Container      | `Shift + Alt + C`          |
+| Duplicate Active Container | `Shift + Alt + Q`          |
+| Add Active Category Label to Custom Template Box | `Shift + Alt + S`|
+| Delete Active Category Container  | `Shift + Alt + O` |
+
+*Note: These shortcuts are based on the default keybindings and may vary depending on your browser or operating system.*
 
 ## Undo
 
