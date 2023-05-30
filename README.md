@@ -3,7 +3,7 @@ Try it here! [AI Prompt Generator](https://aipromptgenerator.art). A simple, mod
 
 # Prompt Generator
 
-A versatile and easy-to-use tool designed to generate intriguing random custom prompts for AI image generation software, like [Stable Diffusion](https://stability.ai/), [Midjourney](https://www.midjourney.com/home/?callbackUrl=%2Fapp%2F), and [Dall-E 2](https://openai.com/product/dall-e-2). It lets you work as meticuluously or as lax as you want to, giving great and varied results with just a few clicks.
+A versatile and easy-to-use tool designed to generate interesting random custom prompts for AI image generation software, very useful for testing models. Works for [Stable Diffusion](https://stability.ai/), [Midjourney](https://www.midjourney.com/home/?callbackUrl=%2Fapp%2F), and [Dall-E 2](https://openai.com/product/dall-e-2). It lets you work as meticuluously or as lax as you want to, giving great and varied results with just a few clicks.
 
 ## Quick Start
 
