@@ -683,7 +683,7 @@ input#promptTemplate::placeholder {
   border-radius: 8px;
   background-color: #ffffff;
   color: rgb(36, 36, 36);
-  padding: 8px 65px;
+  padding: 8px 55px;
   font-size: 16px;
   transition: background-color 0.3s ease;
 }
