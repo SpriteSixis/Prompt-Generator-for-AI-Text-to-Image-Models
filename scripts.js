@@ -1133,7 +1133,7 @@ document.addEventListener('keydown', function (event) {
     let currentTemplate = templateTextArea.value;
 
     // Append the category name to the template
-    currentTemplate += ` [${categoryName}]`;
+    currentTemplate += `, [${categoryName}]`;
 
     // Set the updated template back to the textarea
     templateTextArea.value = currentTemplate;
