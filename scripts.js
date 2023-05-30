@@ -192,15 +192,21 @@ function createCategoryComponent(categoryName) {
   addToTemplateButton.onclick = () => {
     // Fetch current template
     let currentTemplate = templateTextArea.value;
-  
+
     // Remove leading comma and space if present
     currentTemplate = currentTemplate.replace(/^,\s*/, '');
-  
+
     // Append the category name to the template
     currentTemplate += (currentTemplate === '' ? '' : ', ') + `[${categoryName}]`;
-  
+
     // Set the updated template back to the textarea
     templateTextArea.value = currentTemplate;
+
+    // Automatically resize the textarea
+    const textareaLineHeight = parseInt(getComputedStyle(templateTextArea).lineHeight);
+    const minHeight = textareaLineHeight * 1; // Set a minimum height for the textarea (e.g., 1 lines)
+    const newHeight = Math.max(minHeight, templateTextArea.scrollHeight);
+    templateTextArea.style.height = newHeight + "px";
   };
 
   // Append the addToTemplateButton to the optionContainer
@@ -931,9 +937,26 @@ function addAllToTemplate() {
 
   // Set the updated template back to the textarea
   templateTextArea.value = currentTemplate;
+
+  // Automatically resize the textarea
+  const textareaLineHeight = parseInt(getComputedStyle(templateTextArea).lineHeight);
+  const minHeight = textareaLineHeight * 1; // Set a minimum height for the textarea (e.g., 1 lines)
+  const newHeight = Math.max(minHeight, templateTextArea.scrollHeight);
+  templateTextArea.style.height = newHeight + "px";
 }
 
 document.getElementById('add-all-template-btn').addEventListener('click', addAllToTemplate);
+
+const promptTemplateTextArea = document.getElementById('promptTemplate');
+
+promptTemplateTextArea.addEventListener('input', function () {
+  promptTemplateTextArea.style.height = ''; // Reset the height to its default value
+  promptTemplateTextArea.style.overflowY = 'auto'; // Enable vertical scrolling if needed
+
+  const minHeight = parseInt(getComputedStyle(promptTemplateTextArea).lineHeight) * 1; // Set a minimum height for the textarea (e.g., 2 lines)
+  const newHeight = Math.max(minHeight, promptTemplateTextArea.scrollHeight);
+  promptTemplateTextArea.style.height = newHeight + 'px';
+});
 
 document.addEventListener('keydown', function (event) {
   // Shift + Alt + 'A' was pressed
@@ -1149,6 +1172,12 @@ document.addEventListener('keydown', function (event) {
 
     // Set the updated template back to the textarea
     templateTextArea.value = currentTemplate;
+
+    // Automatically resize the textarea
+    const textareaLineHeight = parseInt(getComputedStyle(templateTextArea).lineHeight);
+    const minHeight = textareaLineHeight * 1; // Set a minimum height for the textarea (e.g., 1 lines)
+    const newHeight = Math.max(minHeight, templateTextArea.scrollHeight);
+    templateTextArea.style.height = newHeight + "px";
   }
 });
 
