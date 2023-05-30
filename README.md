@@ -94,7 +94,7 @@ You can go as detailed as you want, like with a long Deforum prompt:
     
 (Notice that "by Caravaggio" is repeated since in the Template Box the Category `[ARTISTS]` was repeated as well, you need to duplicate the container so you get `[ARTISTS2]`, `[ARTISTS3]`, etc. or create new containers in case you want different results.)
 
-![Add to Template](./assets/addtotemplate_2.gif)
+![Add to Template](./assets/addtotemplate3.gif)
 
 *(Use the **Add to Template Buttons** to save time from typing everything yourself.)*
     
