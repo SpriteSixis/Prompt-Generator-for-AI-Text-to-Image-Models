@@ -17,6 +17,10 @@ The generator takes a set number of random words from each category, shuffles th
 
 ### Category Containers Explained
 
+![Category Container](./assets/categorycontainerbuttons_1_1.gif)
+
+*(You can also use the **Up** and **Down** arrows on your keyboard to increase or decrease the number of words to draw from the container.)*
+
 Each category container includes:
 
 - **Category Label**: The name of the category you are working on.
@@ -31,6 +35,10 @@ Each category container includes:
 
 ### Sidebar Features
 
+![New Category Button](./assets/newcontainer_1_1.gif)
+
+*(The **New Category** Button in action.)*
+
 - **Add Category Button**: Lets you create your own new custom category containers.
 - **Clear All Button**: Deletes all text from the category containers.
 - **Undo Clear All Button**: Restores text cleared by an accidental click of **Clear All** button due to mouse lag (Lesson learned.)
@@ -39,7 +47,12 @@ Each category container includes:
 - **Add Custom Prompts Button**: Merges words and categories from a file with existing ones.
 - **Save All Button**: Stores the current layout and text in your browser storage, preserving your setup across sessions.
 - **Include All and Lock All Buttons**: Toggles inclusion and editing for all categories.
-- **Randomize and Generate Buttons**: Populates categories with random words and generates prompts, respectively.
+
+![Randomize Button](./assets/randomizebutton_1_1.gif)
+
+*(The **Randomize** Button in action.)*
+
+- **Randomize Button**: Populates categories with a set number of random words.
 - **Generate Button**: The star of the show, which makes everything happen. `Shift + Alt + G`
 - **Undo Delete Category Button**: Restores deleted category containers.
 - **Add All to Template Button**: Adds the `[CATEGORY]` name of all the containers with an active include checkbox to the template.
@@ -76,8 +89,16 @@ You can go as detailed as you want, like with a long Deforum prompt:
     "30": "caveman, taking_a_selfie standing in a futuristic city, Visual Novel, Ink, by Banksy, surprised, cel shading <SelfiesLORA1.1>", "60": "tiger, jumping, in a frozen lake, fauvist, by Pixar Animation Studios --neg Fisheye Lens, Paper Model", "90": "urban ninja, laser sword, by Caravaggio"`
     
 (Notice that "by Caravaggio" is repeated since in the Template Box the Category `[ARTISTS]` was repeated as well, you need to duplicate the container so you get `[ARTISTS2]`, `[ARTISTS3]`, etc. or create new containers in case you want different results.)
+
+![Add to Template](./assets/addtotemplate_2.gif)
+
+*(Use the **Add to Template Buttons** to save time from typing everything yourself.)*
     
 I added the Add to Template button so that you can save yourself the time it takes to type the name of the category, and not worry about typos either. It also has a Keyboard Shortcut that sends whatever category is active to the Template Box. `Shift + Alt + T.`
+
+![Duplicate Container](./assets/duplicatefunction_1_1.gif)
+
+*(Save time by using the **Duplicate** function. The **Randomize** button will keep working in the duplicated category.)*
 
 You can also leave the Prompt Template box empty if you just want to generate random words and phrases separated by commas. In that case the prompt generating function outputs the words in the order of the category containers from top to bottom. Simply drag and drop the headers to rearrange the order.
 
