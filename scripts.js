@@ -1089,8 +1089,9 @@ document.addEventListener('keydown', function (event) {
     const includeCheckbox = category.querySelector('.include-category');
     if (!includeCheckbox) return; // Ignore if there is no include checkbox in the category
 
-    // Toggle the checkbox
+    // Toggle the checkbox and manually trigger the input event
     includeCheckbox.checked = !includeCheckbox.checked;
+    includeCheckbox.dispatchEvent(new Event('input'));
   }
 });
 
