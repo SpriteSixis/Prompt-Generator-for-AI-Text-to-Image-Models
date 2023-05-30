@@ -476,7 +476,8 @@ function generatePrompts() {
 
   // If promptTemplate is empty, generate a default template that includes all categories
   if (!promptTemplate) {
-    promptTemplate = categoryData.map(category => `[${category.name}]`).join(', ');
+    // Filter out the excluded categories and join the included ones with ', '
+    promptTemplate = categoryData.filter(category => category.includeCategory).map(category => `[${category.name}]`).join(', ');
   }
 
   const generatedPromptsContainer = document.getElementById('generatedPrompts');
