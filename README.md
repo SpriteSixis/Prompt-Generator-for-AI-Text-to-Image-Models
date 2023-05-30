@@ -11,7 +11,7 @@ Visit [AI Prompt Generator](aipromptgenerator.art) or download the code and open
 
 ## How It Works
 
-The generator takes a set number of random words from each category, shuffles them, and produces the desired number of unique prompts. You can directly copy the prompt to your clipboard and use it in any application of your choice.
+The generator takes a set number of random words from each category, shuffles them, and produces the desired number of unique prompts. You can copy the generated prompt to your clipboard and paste it into any application of your choice..
 
 ## Detailed Features
 
@@ -20,6 +20,8 @@ The generator takes a set number of random words from each category, shuffles th
 ![Category Container](./assets/categorycontainerbuttons_1_1.gif)
 
 *(You can also use the **Up** and **Down** arrows on your keyboard to increase or decrease the number of words to draw from the container.)*
+
+The **Category Containers** form the core of the prompt generation process. Each container represents a specific `[CATEGORY]`, such as `[SUBJECTS], [POSES], [SETTINGS], ETC.` You can add custom words or phrases to each container, control their inclusion in prompt generation using checkboxes, and specify the **Number of Words** to draw from each `[CATEGORY]`. Additionally, the containers can be rearranged by dragging and dropping their headers.
 
 Each category container includes:
 
@@ -39,7 +41,9 @@ Each category container includes:
 
 *(The **New Category** Button in action.)*
 
-- **Add Category Button**: Lets you create your own new custom category containers.
+The sidebar offers a range of convenient features to streamline your workflow:
+
+- **New Category Button**: Lets you create your own new custom category containers.
 - **Clear All Button**: Deletes all text from the category containers.
 - **Undo Clear All Button**: Restores text cleared by an accidental click of **Clear All** button due to mouse lag (Lesson learned.)
 - **Save Custom Prompts Button**: Exports your current workspace (words and categories) to an external file.
@@ -61,7 +65,7 @@ Each category container includes:
 
 ### Custom Prompt Template
 
-The other star of the show. In short it works a bit like Mad Libs, where you specify whatever structure you wish your prompt to have and reference the `[CATEGORY]` you wish in square brackets so that the prompt generator fills that space with a random word or phrase from said container.
+The other star of the show. In short it works a bit like Mad Libs, where you specify whatever structure you wish your prompt to have and reference the `[CATEGORY]` you wish in square brackets (e.g. `[SUBJECTS], [CLOTHING],` etc.) so that the prompt generator fills that space with a random word or phrase from said container.
 
 The placeholder shows a suggested sentence structure: 
 
@@ -165,7 +169,7 @@ And these shortcuts respond to whatever category container is currently active.
 
 ## Undo
 
-I've implemented as many undo features that I could think of so that you can work without fear and let your creativity loose. I have tested it in many ways but I'm sure there are some bugs here and there still, so please be mindful and take advantage of the Save Functions as well to avoid losing hours of work.
+I've implemented as many undo features that I could think of so that you can work without fear and let your creativity loose. Right now you can undo the **"Clear All"**, **"Delete"** and **"Delete All"** functions, I have tested them in many ways but I'm sure there are some bugs here and there still, so please be mindful and take advantage of the **Save** Functions as well to avoid losing valuable work.
 
 There is also a regular `"Ctrl + Z"` undo and `"Ctrl + Y"` redo feature for when you are typing or deleting text in the textboxes but again, please tell me if there are any issues with it and I'll see to fix them as soon as I can.
 
