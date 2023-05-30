@@ -192,10 +192,13 @@ function createCategoryComponent(categoryName) {
   addToTemplateButton.onclick = () => {
     // Fetch current template
     let currentTemplate = templateTextArea.value;
-
+  
+    // Remove leading comma and space if present
+    currentTemplate = currentTemplate.replace(/^,\s*/, '');
+  
     // Append the category name to the template
-    currentTemplate += `, [${categoryName}]`;
-
+    currentTemplate += (currentTemplate === '' ? '' : ', ') + `[${categoryName}]`;
+  
     // Set the updated template back to the textarea
     templateTextArea.value = currentTemplate;
   };
@@ -902,20 +905,29 @@ function addAllToTemplate() {
   // Fetch current template
   let currentTemplate = templateTextArea.value;
 
+  // Create an array to store the category names
+  const categoryNames = [];
+
   // Loop over all category containers
   for (const categoryContainer of categoriesContainer.children) {
     // Check if the include checkbox is checked
     const includeCheckbox = categoryContainer.querySelector('.include-category');
 
-    // If the checkbox is checked, append the category to the template
+    // If the checkbox is checked, add the category name to the array
     if (includeCheckbox && includeCheckbox.checked) {
       // Find the category name header in the container
       const categoryName = categoryContainer.querySelector('.category-header').innerText;
 
-      // Append the category name to the template
-      currentTemplate += `, [${categoryName}]`;
+      // Add the category name to the array
+      categoryNames.push(`[${categoryName}]`);
     }
   }
+
+  // Create the template string by joining the category names with commas and spaces
+  const categoryString = categoryNames.join(', ');
+
+  // Append the category string to the current template
+  currentTemplate += (currentTemplate.length > 0 ? ', ' : '') + categoryString;
 
   // Set the updated template back to the textarea
   templateTextArea.value = currentTemplate;
