@@ -160,17 +160,17 @@ Basically everything has a keyboard shortcut so that you can work as efficiently
 | Undo Delete All            | `Shift + Alt + 5`          |
 | Clear History              | `Shift + Alt + H`          |
 | Delete All Category Containers | `Shift + Alt + Y`       |
-| Top Secret Dev Code to Empty Everything | `Shift + Alt + 0` |
+| Top Secret Dev Code to Clear Textboxes | `Shift + Alt + 0` |
 
 And these shortcuts respond to whatever category container is currently active.
 
 | Function                   | Shortcut                 |
 |----------------------------|--------------------------|
-| Include Active Container   | `Shift + Alt + N`          |
-| Lock Active Container      | `Shift + Alt + C`          |
-| Duplicate Active Container | `Shift + Alt + Q`          |
-| Add Active Category Label to Custom Template Box | `Shift + Alt + S`|
-| Delete Active Category Container  | `Shift + Alt + O` |
+| Include Active Container   | `Shift + Alt + U`          |
+| Lock Active Container      | `Shift + Alt + K`          |
+| Duplicate Active Container | `Shift + Alt + B`          |
+| Add Active Category Label to Custom Template Box | `Shift + Alt + T`|
+| Delete Active Category Container  | `Shift + Alt + X` |
 
 *Note: These shortcuts are based on the default keybindings and may vary depending on your browser or operating system.*
 
