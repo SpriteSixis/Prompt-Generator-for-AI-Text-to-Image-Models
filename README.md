@@ -77,7 +77,7 @@ Which after generation can look like this:
 
 You can modify the weight of each word with brackets if you want and it will still work, like this: 
 
-- Seed: `(([SUBJECTS])), [CLOTHING], with [PROPS], in a beautiful ([SETTINGS]), [SCENE]`
+- Seed: `(([SUBJECTS])), [CLOTHING], with [PROPS], in a (beautiful [SETTINGS]), [SCENE]`
 - Result: `((Adventurer)), red shirt, with hiking stick, in a (beautiful forest), spring.`
 
 Or you can write it with numbers if you prefer:
