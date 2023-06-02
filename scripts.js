@@ -499,9 +499,6 @@ function generatePrompts() {
     textBox.classList.add('form-control', 'me-2', 'prompt-output');
     textBox.readOnly = true;
 
-    // Add the textBox to the container
-    textBoxContainer.appendChild(textBox);
-
     // Call the function to adjust the height of the textarea
     setTimeout(() => autoAdjustTextareaHeight(textBox), 0);
 
@@ -520,11 +517,14 @@ function generatePrompts() {
     // Add the copyButton to the container
     textBoxContainer.appendChild(copyButton);
 
+    // Add the textBox to the container
+    textBoxContainer.appendChild(textBox);
+
     // Add the container to the promptElement
     promptElement.appendChild(textBoxContainer);
 
     generatedPromptsContainer.appendChild(promptElement);
-    promptHistoryContainer.innerHTML += prompt + '<br>';
+    promptHistoryContainer.innerHTML += prompt.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '<br>';
   }
 }
 
