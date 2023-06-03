@@ -135,6 +135,41 @@ input#promptTemplate::placeholder {
   color: #aaa !important;
 }
 
+
+@keyframes fade-in-button {
+  from {
+    background-color: rgba(0, 158, 231, 0.747);
+    /* End with desired background color and opacity */
+  }
+
+  to {
+    background-color: rgba(50, 226, 223, 0);
+    /* Start with transparent background */
+  }
+}
+
+.fade-in-animation-btn {
+  animation: fade-in-button 0.5s ease-out;
+  /* Adjust the duration and timing function as needed */
+}
+
+@keyframes fade-in-container {
+  from {
+    background-color: rgba(41, 255, 202, 0.767);
+    /* End with desired background color and opacity */
+  }
+
+  to {
+    background-color: rgba(50, 226, 223, 0);
+    /* Start with transparent background */
+  }
+}
+
+.fade-in-animation-container {
+  animation: fade-in-container 0.5s ease-out;
+  /* Adjust the duration and timing function as needed */
+}
+
 .category input[type="number"] {
   height: 30px;
   width: 50px;
