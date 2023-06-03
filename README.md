@@ -100,7 +100,7 @@ You can go as detailed as you want, like with a long Deforum prompt:
     
 I added the Add to Template button so that you can save yourself the time it takes to type the name of the category, and not worry about typos either. It also has a Keyboard Shortcut that sends whatever category is active to the Template Box. `Shift + Alt + T.`
 
-![Duplicate Container](./assets/duplicatefunction_1_1.gif)
+![Duplicate Container](./assets/duplicate2.gif)
 
 *(Save time by using the **Duplicate** function. The **Randomize** button will keep working in the duplicated category.)*
 
