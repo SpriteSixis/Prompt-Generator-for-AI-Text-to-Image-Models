@@ -207,6 +207,13 @@ function createCategoryComponent(categoryName) {
     const minHeight = textareaLineHeight * 1; // Set a minimum height for the textarea (e.g., 1 lines)
     const newHeight = Math.max(minHeight, templateTextArea.scrollHeight);
     templateTextArea.style.height = newHeight + "px";
+
+    // Add the fade-in-animation-container class to the container
+    const container = addToTemplateButton.closest('.category-container');
+    container.classList.add('fade-in-animation-container');
+    setTimeout(() => {
+      container.classList.remove('fade-in-animation-container');
+    }, 100);
   };
 
   // Append the addToTemplateButton to the optionContainer
@@ -927,6 +934,12 @@ function addAllToTemplate() {
 
       // Add the category name to the array
       categoryNames.push(`[${categoryName}]`);
+
+      // Add the fade-in-animation-container class to the category
+      categoryContainer.classList.add('fade-in-animation-container');
+      setTimeout(() => {
+        categoryContainer.classList.remove('fade-in-animation-container');
+      }, 100);
     }
   }
 
@@ -958,6 +971,7 @@ promptTemplateTextArea.addEventListener('input', function () {
   const newHeight = Math.max(minHeight, promptTemplateTextArea.scrollHeight);
   promptTemplateTextArea.style.height = newHeight + 'px';
 });
+
 
 document.addEventListener('keydown', function (event) {
   // Shift + Alt + 'A' was pressed
@@ -1131,6 +1145,7 @@ document.addEventListener('keydown', function (event) {
   }
 });
 
+
 document.addEventListener('keydown', function (event) {
   // Shift + Alt + 'X' was pressed
   if (event.shiftKey && event.altKey && event.key.toLowerCase() === 'x') {
@@ -1167,18 +1182,27 @@ document.addEventListener('keydown', function (event) {
 
     // Fetch current template
     let currentTemplate = templateTextArea.value;
+    
+    // Remove leading comma and space if present
+    currentTemplate = currentTemplate.replace(/^,\s*/, '');
 
     // Append the category name to the template
-    currentTemplate += `, [${categoryName}]`;
+    currentTemplate += (currentTemplate === '' ? '' : ', ') + `[${categoryName}]`;
 
     // Set the updated template back to the textarea
     templateTextArea.value = currentTemplate;
 
     // Automatically resize the textarea
     const textareaLineHeight = parseInt(getComputedStyle(templateTextArea).lineHeight);
-    const minHeight = textareaLineHeight * 1; // Set a minimum height for the textarea (e.g., 1 lines)
+    const minHeight = textareaLineHeight * 1; // Set a minimum height for the textarea (e.g., 1 line)
     const newHeight = Math.max(minHeight, templateTextArea.scrollHeight);
     templateTextArea.style.height = newHeight + "px";
+
+    // Add the fade-in-animation-container class to the category
+    category.classList.add('fade-in-animation-container');
+    setTimeout(() => {
+      category.classList.remove('fade-in-animation-container');
+    }, 500);
   }
 });
 
@@ -1193,6 +1217,9 @@ document.addEventListener('keydown', function (event) {
 
     // Duplicate the active category
     duplicateCategory(category);
+
+    // Add the fade-in-animation class to the new category container
+  categoryComponent.classList.add('fade-in-animation-btn');
   }
 });
 
@@ -1215,6 +1242,9 @@ function duplicateCategory(activeCategory) {
 
   // Create a new category with the duplicated name
   const categoryComponent = createCategoryComponent(duplicateCategoryName);
+
+  // Add the fade-in-animation class to the new category container
+  categoryComponent.classList.add('fade-in-animation-btn');
 
   // Copy the contents of the original category to the duplicated category
   let originalTextArea = activeCategory.querySelector('textarea');
