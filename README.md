@@ -82,15 +82,15 @@ You can modify the weight of each word with brackets if you want and it will sti
 
 Or you can write it with numbers if you prefer:
 
-- Seed: `[SUBJECTS]:1.4, [CLOTHING], with [PROPS], in a [SETTINGS]:1.2, [SCENE]`
-- Result: `Adventurer:1.4, red shirt, with hiking stick, in a beautiful forest:1.2, spring.`
+- Seed: `[SUBJECTS]:0.95, [CLOTHING], with [PROPS], in a [SETTINGS]:0.4, [SCENE]`
+- Result: `Adventurer:0.95, red shirt, with hiking stick, in a beautiful forest:0.4, spring.`
 
 You can go as detailed as you want, like with a long Deforum prompt:
 
 - Seed: `"0": "[SUBJECTS], [POSES] in a [SETTINGS], [VISUAL STYLES], [PENS], [ARTISTS]",
-    "30": "[SUBJECTS2], "lora trigger word" [POSES2] in a [SETTINGS2], [VISUAL STYLES2], [PENS2], [ARTISTS2], [EMOTIONS], [DRAWING STYLES] <LORA1.1>", "60": "[SUBJECTS3], [POSES2], in a [SETTINGS2], [VISUAL STYLES3], [ARTISTS3] --neg [CAMERAS], [ETCHINGS]", "90": "[SUBJECTS4], [PROPS], [ARTISTS]"`
+    "30": "[SUBJECTS2], "lora trigger word" [POSES2] in a [SETTINGS2], [VISUAL STYLES2], [PENS2], [ARTISTS2], [EMOTIONS], [DRAWING STYLES] <LORA:0.6>", "60": "[SUBJECTS3], [POSES2], in a [SETTINGS2], [VISUAL STYLES3], [ARTISTS3] --neg [CAMERAS], [ETCHINGS]", "90": "[SUBJECTS4], [PROPS], [ARTISTS]"`
 - Result: `"0": "a strong greek god, wrestling in a Mountain Range, Stuckist, Pastel Art, by Caravaggio",
-    "30": "caveman, taking_a_selfie standing in a futuristic city, Visual Novel, Ink, by Banksy, surprised, cel shading <SelfiesLORA1.1>", "60": "tiger, jumping, in a frozen lake, fauvist, by Pixar Animation Studios --neg Fisheye Lens, Paper Model", "90": "urban ninja, laser sword, by Caravaggio"`
+    "30": "caveman, taking_a_selfie standing in a futuristic city, Visual Novel, Ink, by Banksy, surprised, cel shading <SelfiesLORA:0.6>", "60": "tiger, jumping, in a frozen lake, fauvist, by Pixar Animation Studios --neg Fisheye Lens, Paper Model", "90": "urban ninja, laser sword, by Caravaggio"`
     
 (Notice that "by Caravaggio" is repeated since in the Template Box the Category `[ARTISTS]` was repeated as well, you need to duplicate the container so you get `[ARTISTS2]`, `[ARTISTS3]`, etc. or create new containers in case you want different results.)
 
