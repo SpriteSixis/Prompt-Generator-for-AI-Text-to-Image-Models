@@ -519,13 +519,13 @@ function generatePrompts() {
     copyButton.title = 'Copy Generated Prompt to Clipboard'
     copyButton.onclick = () => {
       navigator.clipboard.writeText(prompt);
-    };
-
-    // Add the copyButton to the container
-    textBoxContainer.appendChild(copyButton);
+    };    
 
     // Add the textBox to the container
     textBoxContainer.appendChild(textBox);
+    
+    // Add the copyButton to the container
+    textBoxContainer.appendChild(copyButton);
 
     // Add the container to the promptElement
     promptElement.appendChild(textBoxContainer);
