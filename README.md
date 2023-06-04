@@ -46,9 +46,9 @@ The sidebar offers a range of convenient features to streamline your workflow:
 - **New Category Button**: Lets you create your own new custom category containers.
 - **Clear All Button**: Deletes all text from the category containers.
 - **Undo Clear All Button**: Restores text cleared by an accidental click of **Clear All** button due to mouse lag (Lesson learned.)
-- **Save Custom Prompts Button**: Exports your current workspace (words and categories) to an external file.
-- **Load Custom Prompts Button**: Imports an external file with whatever words and categories you previously created, enabling you to easily switch between various curated themes.
-- **Add Custom Prompts Button**: Merges words and categories from a file with existing ones.
+- **Save Custom Prompts Button**: Exports your current workspace (words and categories) to an external `.json` file.
+- **Load Custom Prompts Button**: Imports an external `.json` file with whatever words and categories you previously created, enabling you to easily switch between various curated themes.
+- **Add Custom Prompts Button**: Merges words and categories from a `.json` file with existing ones.
 - **Save All Button**: Stores the current layout and text in your browser storage, preserving your setup across sessions.
 - **Include All and Lock All Buttons**: Toggles inclusion and editing for all categories.
 
