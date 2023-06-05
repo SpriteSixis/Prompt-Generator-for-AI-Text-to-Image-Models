@@ -167,6 +167,7 @@ Basically everything has a keyboard shortcut so that you can work as efficiently
 | Add All to Template        | `Shift + Alt + A`          |
 | Restore Default            | `Shift + Alt + D`          |
 | Advanced Layout            | `Shift + Alt + 4`          |
+| Spell Check Toggle         | `Shift + Alt + 7`          |
 | Undo Delete All            | `Shift + Alt + 5`          |
 | Clear History              | `Shift + Alt + H`          |
 | Delete All Category Containers | `Shift + Alt + Y`       |
