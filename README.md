@@ -191,6 +191,8 @@ I've implemented as many undo features that I could think of so that you can wor
 
 There is also a regular `"Ctrl + Z"` undo and `"Ctrl + Y"` redo feature for when you are typing or deleting text in the textboxes but again, please tell me if there are any issues with it and I'll see to fix them as soon as I can.
 
+Also, the **"Toggle Spell Check"** button is a bit buggy when you turn it back on, sometimes you have to hover over the text for the red wavy line to appear under the text again. The keyboard shortcut, however, works instantly in whatever active text area you are working on, so I would recommend using that more than the button!
+
 ## Browser Compatibility
 
 Tested primarily in Windows with the latest version of Chrome. Some light testing in Firefox as well, and also on Chrome and Safari in MacOs.
