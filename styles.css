@@ -707,42 +707,88 @@ input#promptTemplate::placeholder {
 
 /* Highlight drop zones */
 .category-container.over {
-  border-color: #888;
+  border-color: #6e8579;
+  background-color: #3b4d46;
   /* Highlight the drop target with a border */
 }
 
-#removeAllContainer {
+#buttonsContainer {
   margin-top: 20px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
 }
 
-#customGithubButton {
-  font-weight: bold;
-  border-radius: 8px;
-  background-color: #ffffff;
-  color: rgb(36, 36, 36);
-  padding: 8px 55px;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
-}
-
-#supportButtonsContainer {
-  display: flex;
-  align-items: center;
+.btn {
+  min-width: 140px;
 }
 
 .btn-container {
   padding-right: 5px;
 }
 
-#otherButtonsContainer {
-  display: flex;
-  justify-content: flex-end;
+/* Kofi Button */
+.kofi-btn {
+  background-color: #06a2ad;
+  color: white;
 }
 
-#undoRemoveAllButton, #clearHistoryBtn, #removeAllBtn {
-  min-width: 180px;
+.kofi-btn:hover {
+  background-color: #5de2f3;
+  color: white;
+}
+
+.kofi-btn::before {
+  background-color: rgba(15, 177, 177, 0.644);
+  mix-blend-mode: screen;
+}
+
+.kofi-btn:hover::before {
+  background-color: rgba(96, 255, 255, 0.644);
+  mix-blend-mode: screen;
+}
+
+/* Github Button */
+.github-btn {
+  background-color: #e6e6e6;
+  color: #111111; /* Darker color for the text */
+}
+
+.github-btn:hover {
+  background-color: #b9bebc;
+  color: #1a1919; /* Darker color for the text */
+}
+
+.github-btn::before {
+  background-color: rgba(219, 223, 220, 0.363);
+  color: #1a1919; /* Darker color for the text */
+  mix-blend-mode: screen;
+}
+
+.github-btn:hover::before {
+  background-color: rgba(202, 198, 198, 0.384);  
+  color: #111111; /* Darker color for the text */
+  mix-blend-mode: screen;
+}
+
+/* Spellcheck Button */
+.spellchk-btn {
+  background-color: #830041;
+  color: white;
+}
+
+.spellchk-btn:hover {
+  background-color: #f35da3;
+  color: white;
+}
+
+.spellchk-btn::before {
+  background-color: rgba(177, 15, 163, 0.644);
+  mix-blend-mode: screen;
+}
+
+.spellchk-btn:hover::before {
+  background-color: rgba(255, 96, 247, 0.644);
+  mix-blend-mode: screen;
 }
 
 /* Undo Remove All Button */
