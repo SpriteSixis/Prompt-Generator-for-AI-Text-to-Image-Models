@@ -1327,6 +1327,27 @@ function undoRemoveAll() {
   }
 }
 
+// Get the spellcheck toggle button element
+const spellcheckToggleBtn = document.getElementById('spellcheckToggleBtn');
+
+// Add event listener to toggle spellcheck on button click
+spellcheckToggleBtn.addEventListener('click', toggleSpellcheck);
+
+function toggleSpellcheck() {
+  const textareas = document.querySelectorAll('textarea');
+  
+  textareas.forEach((textarea) => {
+    textarea.spellcheck = !textarea.spellcheck;
+  });
+}
+
+// Add event listener for keydown on the whole document
+document.addEventListener('keydown', (event) => {
+  if (event.shiftKey && event.altKey && event.code === 'Digit7') {
+    toggleSpellcheck();
+  }
+});
+
 const undoRemoveButton = document.getElementById('undoRemoveButton');
 undoRemoveButton.addEventListener('click', undoRemove);
 
