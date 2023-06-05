@@ -56,6 +56,10 @@ h1 {
   /* Adjust the width as needed #30d454 green, #b02dec pink*/
 }
 
+textarea {
+  text-decoration-color: red;
+}
+
 .button-section {
   flex-shrink: 0;
   position: sticky;
