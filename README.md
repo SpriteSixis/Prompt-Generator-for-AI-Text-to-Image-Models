@@ -75,15 +75,15 @@ Which after generation can look like this:
 
 - Result: `Adventurer, red shirt, with hiking stick, in a beautiful forest, spring.`
 
-You can modify the weight of each word with brackets if you want and it will still work, like this: 
+As you create more detailed templates you can modify the weight of each word with brackets or numbers if you want and it will still work, like this: 
 
-- Seed: `(([SUBJECTS])), [CLOTHING], with [PROPS], in a (beautiful [SETTINGS]), [SCENE]`
-- Result: `((Adventurer)), red shirt, with hiking stick, in a (beautiful forest), spring.`
+- Seed: `(masterpiece, best quality:1.2), (([SUBJECTS])), [CLOTHING], with [PROPS], in a (beautiful [SETTINGS]), [SCENE]`
+- Result: `(masterpiece, best quality:1.2), ((Adventurer)), red shirt, with hiking stick, in a (beautiful forest), spring`
 
-Or you can write it with numbers if you prefer:
+You can create templates with LoRa tags and trigger words as well:
 
-- Seed: `[SUBJECTS]:0.95, [CLOTHING], with [PROPS], in a [SETTINGS]:0.4, [SCENE]`
-- Result: `Adventurer:0.95, red shirt, with hiking stick, in a beautiful forest:0.4, spring.`
+- Seed: `(masterpiece, best quality:1.2), lora trigger word, [SUBJECTS]:0.95, [CLOTHING], with [PROPS], in a [SETTINGS]:0.4, [SCENE] <loracharacter:0.6> <lorastyle:0.5>`
+- Result: `(masterpiece, best quality:1.2), lora trigger word, Adventurer:0.95, red shirt, with hiking stick, in a beautiful forest:0.4, spring <loracharacter:0.6> <lorastyle:0.5>`
 
 You can go as detailed as you want, like with a long Deforum prompt:
 
