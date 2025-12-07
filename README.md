@@ -1,7 +1,7 @@
 # Prompt-Generator-for-AI-Text-to-Image-Models
 Try it here! [https://aipromptgenerator.art](https://aipromptgenerator.art)
 -
-A simple, modular, private, customizable app to help you generate prompts quickly and easily for [Stable Diffusion](https://stability.ai/), [Midjourney](https://www.midjourney.com/home/?callbackUrl=%2Fapp%2F), [Z-Image](https://z-image.ai/), or any.
+A simple, modular, private, customizable app to help you generate prompts quickly and easily for [Stable Diffusion](https://stability.ai/), [Midjourney](https://www.midjourney.com/home/?callbackUrl=%2Fapp%2F), [Z-Image](https://z-image.ai/), or any tool of your preference.
 
 # Prompt Generator
 
