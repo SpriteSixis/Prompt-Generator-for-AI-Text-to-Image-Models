@@ -144,11 +144,6 @@ textarea::placeholder {
   /* Firefox requires this to display the color properly */
 }
 
-input#promptTemplate::placeholder {
-  color: rgb(131, 168, 212);
-  opacity: 1;
-}
-
 /* Custom styles */
 .category {
   border: 2px solid #32e2df;
@@ -903,11 +898,6 @@ input#promptTemplate::placeholder {
   mix-blend-mode: screen;
 }
 
-textarea#promptTemplate {
-  height: 30px;
-  resize: vertical;
-}
-
 .prompt-output {
   border-radius: 7px;
   border: 1px solid #63f7de;
@@ -977,13 +967,12 @@ textarea#promptTemplate {
   /* Change the font family */
 }
 
-#promptTemplate {
+.template-text {
   width: 100%;
-  /* This will make the textarea full width. */
   min-height: 30px;
-  /* This will set a minimum height for the textarea. */
   background-color: #284662;
   color: white;
+  resize: vertical;
 }
 
 #numWords {
@@ -1054,6 +1043,7 @@ textarea#promptTemplate {
   background-color: #242d3f;
   transition: .2s;
   border-radius: calc(30px * var(--switch-size));
+  z-index: 2;
 }
 
 .slider:before {
@@ -1121,6 +1111,123 @@ body::-webkit-scrollbar-thumb:hover {
 * {
   scrollbar-color: #32e2df #1a1a48;
   scrollbar-width: auto;
+}
+
+.template-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+#templateContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.template-card {
+  border: 1px solid #32e2df66;
+  border-radius: 10px;
+  padding: 10px;
+  background-color: #162736;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.template-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* Align template option containers to center (not baseline) */
+.template-card .option-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Make Active and Lock text bold */
+.template-label-text {
+  font-weight: bold;
+}
+
+/* Ensure switches are vertically centered */
+.template-card .switch {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+/* Ensure buttons align with switches and text */
+.template-control-btn {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.template-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: bold;
+}
+
+/* Hide checkbox inputs in template switches, positioned behind slider */
+.template-card .switch input[type="checkbox"] {
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+
+/* Ensure template switches use the same styling as category switches */
+.template-card .switch {
+  --secondary-container: #124a52;
+  --primary: #32e2df;
+  font-size: calc(17px * var(--switch-size));
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  width: calc(3.7em * var(--switch-size));
+  height: calc(1.8em * var(--switch-size));
+  flex-shrink: 0;
+}
+
+.template-control-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  width: auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  height: auto;
+  line-height: 1.2;
+}
+
+/* Remove offset rectangle from template control buttons */
+.template-control-btn::before {
+  display: none;
+}
+
+.template-add-btn {
+  width: auto;
+  padding: 6px 14px;
+  min-width: 0;
+}
+
+.template-card .soft-ui-input {
+  background: #1f3750;
 }
 
 input[type="number"]::-webkit-inner-spin-button,

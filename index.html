@@ -94,11 +94,15 @@
         </div>
         <!-- Prompt generation section -->
         <div class="mt-4">
-          <label class="bold-label" for="promptTemplate">Custom Prompt Template:</label>
-          <textarea id="promptTemplate" rows="4" spellcheck="true"
-            placeholder="[SUBJECTS], wearing [CLOTHING], with [PROPS], in a beautiful [SETTINGS], [SCENE]"
-            title="Write whatever structure you wish with the [CATEGORY NAME] in square brackets. Case insensitive, so don't worry. If a [CATEGORY] is missing in the template, it will not be included in the generated prompt."
-            class="w-full soft-ui-input"></textarea>
+          <div class="template-header-row">
+            <label class="bold-label" for="templateContainer">Custom Prompt Templates:</label>
+            <button id="addTemplateBtn" class="btn button btn-info ml-2 template-add-btn"
+              title="Add a new template card.">+ New Template</button>
+          </div>
+          <p class="text-sm text-gray-300 mt-2">Create multiple template cards and mark the ones you want in rotation as
+            Active. Each generated prompt will roulette-pick one active card; if none are active, we fall back to simple
+            random words. Lock makes a card read-only, Duplicate/Del let you iterate fast.</p>
+          <div id="templateContainer"></div>
           <ul class="text-sm text-gray-400 mt-1">
             <li>Reminder: Ensure the <b>[CATEGORY]</b> names in the template match the ones in the categories section
               (e.g.
@@ -107,10 +111,10 @@
             <li>Don't forget to check your <b>'Include'</b> sliders, if they are deactivated, the <b>[CATEGORY]</b>
               won't appear in
               the prompt, even if it is written in the Template.</li>
-            <li>Finally, don't forget to check that the <b>Number of Words</b> in your <b>[CATEGORY]</b> container is at
-              least 1.</li>
-            <li>For a simple randomized words output, leave the Custom Prompt Template
-              empty. This will generate a list of random words from your selected categories without any specific
+            <li>Finally, don't forget to check that the <b>Number of Words</b> in your <b>[CATEGORY]</b> container is
+              at least 1.</li>
+            <li>If no template cards are active, generation will fall back to randomized words from your selected
+              categories without any specific
               sentence
               structure. The words will be generated in the order of the categories from top to bottom.</li>
           </ul>

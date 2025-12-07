@@ -20,7 +20,6 @@ let lastIndexByCategory = {}; // Track last index used for each category
 // ============================================================================
 // DOM REFERENCES
 // ============================================================================
-const templateTextArea = document.getElementById('promptTemplate');
 const categoriesContainer = document.getElementById('categories');
 const buttonSection = document.querySelector('.button-section');
 const lockAllBtn = document.getElementById('lockAllBtn');
@@ -31,6 +30,233 @@ const randomizeBtn = document.getElementById("randomizeBtn");
 const undoRemoveButton = document.getElementById('undoRemoveButton');
 const undoRemoveAllButton = document.getElementById('undoRemoveAllButton');
 const undoClearAllButton = document.getElementById('undoClearAllButton');
+const templateContainer = document.getElementById('templateContainer');
+const addTemplateBtn = document.getElementById('addTemplateBtn');
+
+let lastTemplateTextarea = null;
+
+// ============================================================================
+// TEMPLATE DECK HELPERS
+// ============================================================================
+
+function autoResizeTemplateTextarea(textarea) {
+  if (!textarea) return;
+  textarea.style.height = '';
+  textarea.style.overflowY = 'auto';
+  const lineHeight = parseInt(getComputedStyle(textarea).lineHeight, 10);
+  const minHeight = isNaN(lineHeight) ? 0 : lineHeight;
+  textarea.style.height = Math.max(minHeight, textarea.scrollHeight || 0) + 'px';
+}
+
+function ensureTemplateCardExists() {
+  if (!templateContainer) return null;
+  if (templateContainer.children.length === 0) {
+    const card = createTemplateCard();
+    templateContainer.appendChild(card);
+  }
+  return templateContainer.children[templateContainer.children.length - 1];
+}
+
+function getTemplateCards() {
+  return Array.from(templateContainer ? templateContainer.querySelectorAll('.template-card') : []);
+}
+
+function getTemplateTextareas() {
+  return Array.from(templateContainer ? templateContainer.querySelectorAll('.template-text') : []);
+}
+
+function getTemplateTargetTextarea() {
+  ensureTemplateCardExists();
+  const activeElement = document.activeElement;
+  if (activeElement && activeElement.classList && activeElement.classList.contains('template-text')) {
+    return activeElement;
+  }
+  if (lastTemplateTextarea && lastTemplateTextarea.isConnected) {
+    return lastTemplateTextarea;
+  }
+  const textareas = getTemplateTextareas();
+  return textareas[textareas.length - 1] || null;
+}
+
+function appendTextToTemplate(text) {
+  const targetTextarea = getTemplateTargetTextarea();
+  if (!targetTextarea) return null;
+  let currentTemplate = targetTextarea.value;
+  currentTemplate = currentTemplate.replace(/^,\s*/, '');
+  currentTemplate += (currentTemplate === '' ? '' : ', ') + text;
+  targetTextarea.value = currentTemplate;
+  autoResizeTemplateTextarea(targetTextarea);
+  return targetTextarea;
+}
+
+function appendCategoryToTemplate(categoryName) {
+  return appendTextToTemplate(`[${categoryName}]`);
+}
+
+function createTemplateCard(text = '', isActive = true, isLocked = false) {
+  const card = document.createElement('div');
+  card.classList.add('template-card');
+
+  const controls = document.createElement('div');
+  controls.classList.add('template-controls');
+
+  // Add the active checkbox with switch style
+  const activeContainer = document.createElement('div');
+  activeContainer.classList.add('option-container');
+  
+  const activeLabel = document.createElement('label');
+  activeLabel.classList.add('switch');
+  
+  const activeCheckbox = document.createElement('input');
+  activeCheckbox.setAttribute('type', 'checkbox');
+  activeCheckbox.classList.add('template-active');
+  activeCheckbox.checked = isActive;
+  activeCheckbox.title = 'Toggle to Include or Exclude Template from Prompt Generation';
+  
+  const activeSlider = document.createElement('div');
+  activeSlider.classList.add('slider');
+  activeSlider.title = 'Toggle to Include or Exclude Template from Prompt Generation';
+  
+  activeLabel.appendChild(activeCheckbox);
+  activeLabel.appendChild(activeSlider);
+  
+  const activeText = document.createElement('span');
+  activeText.textContent = ' Active';
+  activeText.classList.add('template-label-text');
+  activeContainer.appendChild(activeLabel);
+  activeContainer.appendChild(activeText);
+  controls.appendChild(activeContainer);
+
+  // Add the lock checkbox with switch style
+  const lockContainer = document.createElement('div');
+  lockContainer.classList.add('option-container');
+  
+  const lockLabel = document.createElement('label');
+  lockLabel.classList.add('switch');
+  
+  const lockCheckbox = document.createElement('input');
+  lockCheckbox.setAttribute('type', 'checkbox');
+  lockCheckbox.classList.add('template-lock');
+  lockCheckbox.checked = isLocked;
+  lockCheckbox.title = 'Lock Template to Prevent Modification';
+  
+  const lockSlider = document.createElement('div');
+  lockSlider.classList.add('slider');
+  lockSlider.title = 'Lock Template to Prevent Modification';
+  
+  lockLabel.appendChild(lockCheckbox);
+  lockLabel.appendChild(lockSlider);
+  
+  const lockText = document.createElement('span');
+  lockText.textContent = ' Lock';
+  lockText.classList.add('template-label-text');
+  lockContainer.appendChild(lockLabel);
+  lockContainer.appendChild(lockText);
+  controls.appendChild(lockContainer);
+
+  const duplicateButton = document.createElement('button');
+  duplicateButton.textContent = 'Duplicate';
+  duplicateButton.classList.add('button', 'duplicate-btn', 'template-control-btn');
+  duplicateButton.title = 'Duplicate this template card';
+  duplicateButton.addEventListener('click', () => {
+    const newCard = createTemplateCard(textarea.value, activeCheckbox.checked, lockCheckbox.checked);
+    templateContainer.insertBefore(newCard, card.nextSibling);
+    const newTextarea = newCard.querySelector('.template-text');
+    if (newTextarea) {
+      newTextarea.focus();
+    }
+  });
+  controls.appendChild(duplicateButton);
+
+  const deleteButton = document.createElement('button');
+  deleteButton.textContent = 'Delete';
+  deleteButton.classList.add('button', 'remove-btn', 'template-control-btn');
+  deleteButton.title = 'Delete this template card';
+  deleteButton.addEventListener('click', () => {
+    if (templateContainer.children.length <= 1) {
+      textarea.value = '';
+      autoResizeTemplateTextarea(textarea);
+      return;
+    }
+    const fallbackCard = card.nextElementSibling || card.previousElementSibling;
+    card.remove();
+    if (fallbackCard) {
+      const fallbackTextarea = fallbackCard.querySelector('.template-text');
+      if (fallbackTextarea) {
+        lastTemplateTextarea = fallbackTextarea;
+      }
+    }
+  });
+  controls.appendChild(deleteButton);
+
+  const textarea = document.createElement('textarea');
+  textarea.classList.add('soft-ui-input', 'template-text');
+  textarea.rows = 4;
+  textarea.spellcheck = true;
+  textarea.placeholder = '[SUBJECTS], wearing [CLOTHING], with [PROPS], in a beautiful [SETTINGS], [SCENE]';
+  textarea.title = 'Write whatever structure you wish with the [CATEGORY NAME] in square brackets.';
+  textarea.value = text;
+  textarea.readOnly = isLocked;
+  textarea.classList.toggle('locked-textarea', isLocked);
+  textarea.addEventListener('input', () => autoResizeTemplateTextarea(textarea));
+  textarea.addEventListener('focus', () => {
+    lastTemplateTextarea = textarea;
+  });
+
+  lockCheckbox.addEventListener('change', () => {
+    textarea.readOnly = lockCheckbox.checked;
+    textarea.classList.toggle('locked-textarea', lockCheckbox.checked);
+  });
+
+  autoResizeTemplateTextarea(textarea);
+
+  card.appendChild(controls);
+  card.appendChild(textarea);
+
+  lastTemplateTextarea = textarea;
+  return card;
+}
+
+function collectTemplateData() {
+  if (!templateContainer) return [];
+  return getTemplateCards().map(card => {
+    const textarea = card.querySelector('.template-text');
+    const activeCheckbox = card.querySelector('.template-active');
+    const lockCheckbox = card.querySelector('.template-lock');
+    return {
+      text: textarea ? textarea.value : '',
+      active: activeCheckbox ? activeCheckbox.checked : true,
+      locked: lockCheckbox ? lockCheckbox.checked : false
+    };
+  });
+}
+
+function setTemplateCardsFromData(templateData, options = {}) {
+  const append = options.append || false;
+  if (!templateContainer) return;
+  if (!append) {
+    templateContainer.innerHTML = '';
+  }
+
+  const payload = templateData ?? '';
+
+  if (Array.isArray(payload)) {
+    payload.forEach(entry => {
+      const normalized = typeof entry === 'string' ? { text: entry, active: true, locked: false } : (entry || {});
+      const card = createTemplateCard(normalized.text || '', normalized.active !== false, normalized.locked || false);
+      templateContainer.appendChild(card);
+    });
+  } else if (typeof payload === 'string') {
+    const card = createTemplateCard(payload, true, false);
+    templateContainer.appendChild(card);
+  }
+
+  ensureTemplateCardExists();
+  const finalTextarea = getTemplateTextareas().slice(-1)[0];
+  if (finalTextarea) {
+    lastTemplateTextarea = finalTextarea;
+  }
+}
 
 // ============================================================================
 // CATEGORY UI CORE
@@ -270,23 +496,7 @@ function createCategoryComponent(categoryName) {
   addToTemplateButton.classList.add('button', 'add-template-btn');
   addToTemplateButton.title = 'Add this category to the template. Shift + Alt + T'; // Set the title attribute
   addToTemplateButton.onclick = () => {
-    // Fetch current template
-    let currentTemplate = templateTextArea.value;
-
-    // Remove leading comma and space if present
-    currentTemplate = currentTemplate.replace(/^,\s*/, '');
-
-    // Append the category name to the template
-    currentTemplate += (currentTemplate === '' ? '' : ', ') + `[${categoryName}]`;
-
-    // Set the updated template back to the textarea
-    templateTextArea.value = currentTemplate;
-
-    // Automatically resize the textarea
-    const textareaLineHeight = parseInt(getComputedStyle(templateTextArea).lineHeight);
-    const minHeight = textareaLineHeight * 1; // Set a minimum height for the textarea (e.g., 1 lines)
-    const newHeight = Math.max(minHeight, templateTextArea.scrollHeight);
-    templateTextArea.style.height = newHeight + "px";
+    appendCategoryToTemplate(categoryName);
 
     // Add the fade-in-animation-container class to the container
     const container = addToTemplateButton.closest('.category-container');
@@ -664,6 +874,7 @@ categoryNames.forEach(categoryName => {
 });
 // Update move buttons after all categories are created
 setTimeout(() => updateAllMoveButtons(), 0);
+ensureTemplateCardExists();
 
 // ============================================================================
 // KEYBOARD SHORTCUTS - Consolidated hotkey handler
@@ -735,16 +946,7 @@ document.addEventListener('keydown', function (event) {
 
       case 't': // Add active category to template
         const categoryName = category.querySelector('.category-header-name').textContent;
-        let currentTemplate = templateTextArea.value;
-        currentTemplate = currentTemplate.replace(/^,\s*/, '');
-        currentTemplate += (currentTemplate === '' ? '' : ', ') + `[${categoryName}]`;
-        templateTextArea.value = currentTemplate;
-        
-        // Auto-resize template textarea
-        const textareaLineHeight = parseInt(getComputedStyle(templateTextArea).lineHeight);
-        const minHeight = textareaLineHeight * 1;
-        const newHeight = Math.max(minHeight, templateTextArea.scrollHeight);
-        templateTextArea.style.height = newHeight + "px";
+        appendCategoryToTemplate(categoryName);
         
         // Add animation
         category.classList.add('fade-in-animation-container');
@@ -860,7 +1062,6 @@ document.addEventListener('keydown', function (event) {
 
 function generatePrompts() {
   const numPrompts = parseInt(document.getElementById('numPrompts').value, 10);
-  let promptTemplate = document.getElementById('promptTemplate').value;
 
   // Reset last index tracking for each new batch of prompts
   lastIndexByCategory = {};
@@ -874,17 +1075,25 @@ function generatePrompts() {
     return { words, numWords, includeCategory, name };
   });
 
-  // If promptTemplate is empty, generate a default template that includes all categories
-  if (!promptTemplate) {
-    // Filter out the excluded categories and join the included ones with ', '
-    promptTemplate = categoryData.filter(category => category.includeCategory).map(category => `[${category.name}]`).join(', ');
-  }
+  const defaultTemplate = categoryData.filter(category => category.includeCategory).map(category => `[${category.name}]`).join(', ');
+  const activeTemplateCards = getTemplateCards().filter(card => card.querySelector('.template-active')?.checked);
 
   const generatedPromptsContainer = document.getElementById('generatedPrompts');
   generatedPromptsContainer.innerHTML = '';
 
   const promptHistoryContainer = document.getElementById('promptHistory');
   for (let i = 0; i < numPrompts; i++) {
+    let promptTemplate = '';
+    if (activeTemplateCards.length > 0) {
+      const randomCard = activeTemplateCards[Math.floor(Math.random() * activeTemplateCards.length)];
+      const textarea = randomCard.querySelector('.template-text');
+      promptTemplate = textarea ? textarea.value : '';
+    }
+
+    if (!promptTemplate) {
+      promptTemplate = defaultTemplate;
+    }
+
     const prompt = generatePrompt(categoryData, promptTemplate);
     const promptElement = document.createElement('div');
     promptElement.classList.add('mb-3');
@@ -1161,8 +1370,7 @@ async function saveCustomPrompts() {
     return { categoryName, words, numWords, isChecked, isLocked }; // Include checkbox states
   });
 
-  // Save the template prompt
-  const templatePrompt = document.getElementById('promptTemplate').value;
+  const templatePrompt = collectTemplateData();
 
   const data = JSON.stringify({ categories: categoryData, template: templatePrompt }, null, 2);
   const file = new File([data], 'custom-prompts.json', { type: 'application/json' });
@@ -1207,9 +1415,9 @@ function loadCustomPrompts() {
   input.type = 'file';
   input.accept = 'application/json';
 
-  input.addEventListener('change', () => {
-    const file = input.files[0];
-    if (!file) return;
+      input.addEventListener('change', () => {
+        const file = input.files[0];
+        if (!file) return;
 
     const reader = new FileReader();
     reader.onload = e => {
@@ -1243,9 +1451,9 @@ function loadCustomPrompts() {
         lockCheckbox.dispatchEvent(new Event('change')); // Manually trigger the onchange event
       });
 
-      // Load the template prompt
-      document.getElementById('promptTemplate').value = data.template;
-      
+      const templatePayload = data.templates ?? data.template;
+      setTemplateCardsFromData(templatePayload);
+
       // Update move buttons after loading
       setTimeout(() => updateAllMoveButtons(), 0);
     };
@@ -1295,9 +1503,10 @@ function addCustomPrompts() {
         lockCheckbox.dispatchEvent(new Event('change')); // Manually trigger the onchange event
       });
 
-      // Load the template prompt
-      const templateInput = document.getElementById('promptTemplate');
-      templateInput.value += '\n' + data.template; // Append the loaded template prompt
+      const templatePayload = data.templates ?? data.template;
+      if (templatePayload !== undefined) {
+        setTemplateCardsFromData(templatePayload, { append: true });
+      }
       
       // Update move buttons after adding
       setTimeout(() => updateAllMoveButtons(), 0);
@@ -1323,8 +1532,7 @@ function saveAll() {
     return { categoryName, words, numWords, isChecked, isLocked }; // Include checkbox states };
   });
 
-  // Save the template prompt
-  const templatePrompt = document.getElementById('promptTemplate').value;
+  const templatePrompt = collectTemplateData();
 
   localStorage.setItem('categoryData', JSON.stringify({ categories: categoryData, template: templatePrompt }));
   alert('Saved!');
@@ -1362,8 +1570,8 @@ window.addEventListener('load', () => {
     textUndoStack[categoryData.categoryName].push(categoryData.words);
   });
 
-  // Load the template prompt
-  document.getElementById('promptTemplate').value = data.template;
+  const templatePayload = data.templates ?? data.template;
+  setTemplateCardsFromData(templatePayload);
   
   // Update move buttons after loading from localStorage
   setTimeout(() => updateAllMoveButtons(), 0);
@@ -1414,8 +1622,7 @@ function restoreAdvancedLayout() {
 
 function restoreDefaultLayoutWithTemplate() {
   restoreDefaultLayout();
-  const promptTemplate = document.getElementById('promptTemplate');
-  promptTemplate.value = "";
+  setTemplateCardsFromData('', { append: false });
 }
 
 function updateButtonSection() {
@@ -1435,9 +1642,6 @@ window.addEventListener('scroll', updateButtonSection);
 
 function addAllToTemplate() {
   const categoriesContainer = document.getElementById('categories');
-
-  // Fetch current template
-  let currentTemplate = templateTextArea.value;
 
   // Create an array to store the category names
   const categoryNames = [];
@@ -1466,27 +1670,14 @@ function addAllToTemplate() {
   // Create the template string by joining the category names with commas and spaces
   const categoryString = categoryNames.join(', ');
 
-  // Append the category string to the current template
+  const targetTextarea = getTemplateTargetTextarea();
+  if (!targetTextarea) return;
+
+  let currentTemplate = targetTextarea.value.replace(/^,\s*/, '');
   currentTemplate += (currentTemplate.length > 0 ? ', ' : '') + categoryString;
-
-  // Set the updated template back to the textarea
-  templateTextArea.value = currentTemplate;
-
-  // Automatically resize the textarea
-  const textareaLineHeight = parseInt(getComputedStyle(templateTextArea).lineHeight);
-  const minHeight = textareaLineHeight * 1; // Set a minimum height for the textarea (e.g., 1 lines)
-  const newHeight = Math.max(minHeight, templateTextArea.scrollHeight);
-  templateTextArea.style.height = newHeight + "px";
+  targetTextarea.value = currentTemplate;
+  autoResizeTemplateTextarea(targetTextarea);
 }
-
-templateTextArea.addEventListener('input', function () {
-  templateTextArea.style.height = ''; // Reset the height to its default value
-  templateTextArea.style.overflowY = 'auto'; // Enable vertical scrolling if needed
-
-  const minHeight = parseInt(getComputedStyle(templateTextArea).lineHeight) * 1; // Set a minimum height for the textarea (e.g., 2 lines)
-  const newHeight = Math.max(minHeight, templateTextArea.scrollHeight);
-  templateTextArea.style.height = newHeight + 'px';
-});
 
 // ============================================================================
 // TOGGLE HELPERS
@@ -1549,6 +1740,16 @@ spellcheckToggleBtn.addEventListener('click', toggleSpellcheck);
 undoRemoveButton.addEventListener('click', undoRemove);
 undoRemoveAllButton.addEventListener('click', undoRemoveAll);
 undoClearAllButton.addEventListener('click', undoClearAll);
+if (addTemplateBtn) {
+  addTemplateBtn.addEventListener('click', () => {
+    const card = createTemplateCard();
+    templateContainer.appendChild(card);
+    const textarea = card.querySelector('.template-text');
+    if (textarea) {
+      textarea.focus();
+    }
+  });
+}
 
 // ============================================================================
 // LIFECYCLE HOOKS
