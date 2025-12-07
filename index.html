@@ -58,6 +58,17 @@
             title="Sets Number of Random Words to be Drawn from Database.">
           <button id="randomizeBtn" class="btn button randomize-btn"
             title="Pull a Set Number of Random Words from Database. Shift + Alt + W">Randomize</button>
+          <label class="bold-label" for="randomness">Randomness:</label>
+          <input
+            type="range"
+            id="randomness"
+            min="0"
+            max="1"
+            step="0.05"
+            value="1"
+            title="Controls how sequential vs random the word selection is. 0 = Sequential (A,A,A), 1 = Full chaos (C,A,E)"
+          />
+          <span id="randomnessLabel">Full chaos</span>
           <label class="bold-label" for="numPrompts">Number of prompts:</label>
           <input type="number" id="numPrompts" value="10" min="0" max="1000" class="w-16"
             title="Sets Number of Prompts to be Generated.">

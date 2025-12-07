@@ -14,6 +14,8 @@ let textRedoStack = {}; // Change this to an object
 let duplicateCounters = {};
 let categoryIdCounter = 0;
 let dragCategory; // Variable to store the dragged category container
+let randomness = 1.0; // Randomness strength (0 = sequential, 1 = full chaos)
+let lastIndexByCategory = {}; // Track last index used for each category
 
 // ============================================================================
 // DOM REFERENCES
@@ -48,10 +50,67 @@ function createCategoryComponent(categoryName) {
   // Add a header to the container
   const header = document.createElement('div');
   header.className = 'category-header'; // We'll use this class in CSS to style the header
-  header.textContent = categoryName; // Move the category name to the header
-  header.draggable = true; // Make the header draggable
-  header.title = 'Drag and Drop to Rearrange Category Containers to your Liking'
+  
+  // Create a container for the category name (left side)
+  const headerName = document.createElement('div');
+  headerName.className = 'category-header-name';
+  headerName.textContent = categoryName;
+  headerName.draggable = true; // Make the name draggable
+  headerName.title = 'Drag and Drop to Rearrange Category Containers to your Liking';
+  header.appendChild(headerName);
+  
+  // Create a container for the up/down buttons (right side)
+  const headerButtons = document.createElement('div');
+  headerButtons.className = 'category-header-buttons';
+  
+  // Create up button
+  const upButton = document.createElement('button');
+  upButton.className = 'category-move-btn category-move-up';
+  upButton.innerHTML = '▲';
+  upButton.title = 'Move Category Up';
+  upButton.onclick = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    moveCategoryUp(container);
+  };
+  // Prevent drag when clicking button
+  upButton.addEventListener('mousedown', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+  });
+  upButton.addEventListener('dragstart', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+  });
+  
+  // Create down button
+  const downButton = document.createElement('button');
+  downButton.className = 'category-move-btn category-move-down';
+  downButton.innerHTML = '▼';
+  downButton.title = 'Move Category Down';
+  downButton.onclick = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    moveCategoryDown(container);
+  };
+  // Prevent drag when clicking button
+  downButton.addEventListener('mousedown', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+  });
+  downButton.addEventListener('dragstart', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+  });
+  
+  headerButtons.appendChild(upButton);
+  headerButtons.appendChild(downButton);
+  header.appendChild(headerButtons);
+  
   container.appendChild(header);
+  
+  // Update button states after appending to DOM
+  setTimeout(() => updateMoveButtons(container), 0);
 
   const label = document.createElement('label');
   // Comment out or remove this line to disable label text
@@ -257,6 +316,7 @@ function createCategoryComponent(categoryName) {
 
     // Remove the category
     container.remove();
+    updateAllMoveButtons();
   };
   removeButton.classList.add('category-remove-button'); // Add class for selecting
 
@@ -266,18 +326,18 @@ function createCategoryComponent(categoryName) {
   // Append the optionContainer to the main container
   container.appendChild(optionContainer);
 
-  // Drag and drop event handlers
-  header.addEventListener('dragstart', dragStart);
-  header.addEventListener('dragover', dragOver);
-  header.addEventListener('drop', drop);
-  header.addEventListener('dragend', dragEnd); // New event handler
-  header.addEventListener('dragleave', dragLeave); // New event handler
+  // Drag and drop event handlers (attach to the name element, not the whole header)
+  headerName.addEventListener('dragstart', dragStart);
+  headerName.addEventListener('dragover', dragOver);
+  headerName.addEventListener('drop', drop);
+  headerName.addEventListener('dragend', dragEnd); // New event handler
+  headerName.addEventListener('dragleave', dragLeave); // New event handler
 
   return container;
 }
 
 function dragStart(event) {
-  if (event.target.classList.contains('category-header')) {
+  if (event.target.classList.contains('category-header-name')) {
     dragCategory = event.target.closest('.category-container');
     dragCategory.classList.add('dragging');
   }
@@ -313,6 +373,7 @@ function drop(event) {
 
     // Remove the dragging style from the dropped item
     dragCategory.classList.remove('dragging');
+    updateAllMoveButtons();
     dragCategory = null;
   }
 }
@@ -335,15 +396,54 @@ function dragLeave(event) {
   }
 }
 
+function moveCategoryUp(container) {
+  const categoriesContainer = container.parentNode;
+  const previousSibling = container.previousElementSibling;
+  if (previousSibling) {
+    categoriesContainer.insertBefore(container, previousSibling);
+    updateMoveButtons(container);
+    updateMoveButtons(previousSibling);
+  }
+}
+
+function moveCategoryDown(container) {
+  const categoriesContainer = container.parentNode;
+  const nextSibling = container.nextElementSibling;
+  if (nextSibling) {
+    categoriesContainer.insertBefore(nextSibling, container);
+    updateMoveButtons(container);
+    updateMoveButtons(nextSibling);
+  }
+}
+
+function updateMoveButtons(container) {
+  const categoriesContainer = container.parentNode;
+  const upButton = container.querySelector('.category-move-up');
+  const downButton = container.querySelector('.category-move-down');
+  
+  if (upButton && downButton) {
+    const isFirst = !container.previousElementSibling;
+    const isLast = !container.nextElementSibling;
+    
+    upButton.disabled = isFirst;
+    downButton.disabled = isLast;
+  }
+}
+
+function updateAllMoveButtons() {
+  const categories = document.querySelectorAll('.category-container');
+  categories.forEach(container => updateMoveButtons(container));
+}
+
 function duplicateCategory(activeCategory) {
   // Extract the original category name
-  let originalCategoryName = activeCategory.querySelector('.category-header').textContent;
+  let originalCategoryName = activeCategory.querySelector('.category-header-name').textContent;
 
   let duplicateCategoryName = originalCategoryName;
   let duplicateCount = 2;
 
   // Create a list of all existing category names
-  let existingCategoryNames = Array.from(document.querySelectorAll('.category-header')).map(header => header.textContent);
+  let existingCategoryNames = Array.from(document.querySelectorAll('.category-header-name')).map(header => header.textContent);
 
   // Continue incrementing the duplicate count until we find a name that doesn't exist
   while (existingCategoryNames.includes(duplicateCategoryName + duplicateCount)) {
@@ -382,7 +482,7 @@ function duplicateCategory(activeCategory) {
   // Find the position of the last duplicate of the active category
   let insertIndex = activeCategoryIndex + 1;
   while (insertIndex < categoriesContainer.children.length &&
-    categoriesContainer.children[insertIndex].querySelector('.category-header').textContent.startsWith(originalCategoryName)) {
+    categoriesContainer.children[insertIndex].querySelector('.category-header-name').textContent.startsWith(originalCategoryName)) {
     insertIndex++;
   }
 
@@ -392,6 +492,7 @@ function duplicateCategory(activeCategory) {
   } else {
     categoriesContainer.appendChild(categoryComponent);
   }
+  updateAllMoveButtons();
 }
 
 function addCategory() {
@@ -411,6 +512,7 @@ function addCategory() {
 
   const categoryComponent = createCategoryComponent(formattedCategoryName);
   categoriesContainer.appendChild(categoryComponent);
+  updateAllMoveButtons();
 }
 
 function removeAllCategories() {
@@ -436,6 +538,7 @@ function undoRemove() {
       // Otherwise, we insert it at the original position
       categoriesContainer.insertBefore(lastRemoved.category, categoriesContainer.children[lastRemoved.index]);
     }
+    updateAllMoveButtons();
   }
 }
 
@@ -454,6 +557,7 @@ function undoRemoveAll() {
       categoriesContainer.appendChild(element);
     }
   }
+  updateAllMoveButtons();
 }
 
 // ============================================================================
@@ -558,6 +662,8 @@ categoryNames.forEach(categoryName => {
   const categoryComponent = createCategoryComponent(categoryName);
   categoriesContainer.appendChild(categoryComponent);
 });
+// Update move buttons after all categories are created
+setTimeout(() => updateAllMoveButtons(), 0);
 
 // ============================================================================
 // KEYBOARD SHORTCUTS - Consolidated hotkey handler
@@ -628,7 +734,7 @@ document.addEventListener('keydown', function (event) {
         return;
 
       case 't': // Add active category to template
-        const categoryName = category.querySelector('.category-header').textContent;
+        const categoryName = category.querySelector('.category-header-name').textContent;
         let currentTemplate = templateTextArea.value;
         currentTemplate = currentTemplate.replace(/^,\s*/, '');
         currentTemplate += (currentTemplate === '' ? '' : ', ') + `[${categoryName}]`;
@@ -756,6 +862,9 @@ function generatePrompts() {
   const numPrompts = parseInt(document.getElementById('numPrompts').value, 10);
   let promptTemplate = document.getElementById('promptTemplate').value;
 
+  // Reset last index tracking for each new batch of prompts
+  lastIndexByCategory = {};
+
   const categories = document.querySelectorAll('.category');
   const categoryData = Array.from(categories).map(category => {
     const words = category.querySelector('textarea').value.split(',').map(word => word.trim()).filter(word => word);
@@ -827,7 +936,7 @@ function autoAdjustTextareaHeight(textarea) {
 function generatePrompt(categoryData, template) {
   // Create a map for easier category word access
   const categoryMap = categoryData.reduce((map, category) => {
-    map[category.name] = category.includeCategory ? getRandomWords(category.words, category.numWords) : [];
+    map[category.name] = category.includeCategory ? getRandomWords(category.words, category.numWords, category.name) : [];
     return map;
   }, {});
 
@@ -842,23 +951,109 @@ function generatePrompt(categoryData, template) {
   return prompt;
 }
 
-function getRandomWords(wordArray, numWords) {
+function pickIndexWithRandomness(wordArray, categoryKey) {
+  const n = wordArray.length;
+  if (n === 0) return -1;
+  if (n === 1) {
+    lastIndexByCategory[categoryKey] = 0;
+    return 0;
+  }
+
+  // Deterministic start when randomness is low so the first draw is stable
+  if (!(categoryKey in lastIndexByCategory)) {
+    const startIndex = randomness < 0.35 ? 0 : Math.floor(Math.random() * n);
+    lastIndexByCategory[categoryKey] = startIndex;
+    return startIndex;
+  }
+
+  const lastIndex = lastIndexByCategory[categoryKey];
+
+  // Full chaos: jump anywhere
+  if (randomness >= 0.999) {
+    const idx = Math.floor(Math.random() * n);
+    lastIndexByCategory[categoryKey] = idx;
+    return idx;
+  }
+
+  // Max step size grows non-linearly with randomness (small values keep steps tiny)
+  const maxStep = Math.max(1, Math.floor(Math.pow(randomness, 2) * (n - 1))); // 1 .. n-1
+
+  // Small jump around last index
+  const step = Math.floor(Math.random() * (2 * maxStep + 1)) - maxStep; // [-maxStep, +maxStep]
+  let newIndex = lastIndex + step;
+
+  // Clamp into range
+  if (newIndex < 0) newIndex = 0;
+  if (newIndex >= n) newIndex = n - 1;
+
+  lastIndexByCategory[categoryKey] = newIndex;
+  return newIndex;
+}
+
+function getRandomWords(wordArray, numWords, categoryKey) {
+  if (numWords <= 0) return [];
+
   // If numWords is equal to or greater than the length of wordArray, return wordArray
   if (numWords >= wordArray.length) {
     return wordArray;
   }
 
-  let words = [...wordArray];  // Create a copy of the array so we don't mutate the original
-  let randomWords = [];
+  // Sequential mode: walk the list without jumping
+  if (randomness === 0) {
+    const n = wordArray.length;
+    const startIndex = ((lastIndexByCategory[categoryKey] ?? -1) + 1) % n;
+    const sequentialWords = [];
 
-  for (let i = 0; i < numWords; i++) {
-    if (words.length === 0) {
-      break;  // If there are no more words to choose from, exit the loop
+    for (let i = 0; i < numWords; i++) {
+      sequentialWords.push(wordArray[(startIndex + i) % n]);
     }
 
-    const randomIndex = Math.floor(Math.random() * words.length);  // Choose a random index
-    randomWords.push(words[randomIndex]);  // Add the word at the random index to the list of chosen words
-    words.splice(randomIndex, 1);  // Remove the chosen word from the list of words
+    // Advance the pointer so the next call continues where we left off
+    lastIndexByCategory[categoryKey] = (startIndex + numWords - 1) % n;
+    return sequentialWords;
+  }
+
+  // Get the base index for this category selection (only update once per selection)
+  let baseIndex = pickIndexWithRandomness(wordArray, categoryKey);
+  
+  let randomWords = [];
+  let usedIndices = new Set(); // Track which original indices we've used to avoid duplicates
+
+  for (let i = 0; i < numWords; i++) {
+    // Build list of available indices
+    const availableIndices = [];
+    for (let j = 0; j < wordArray.length; j++) {
+      if (!usedIndices.has(j)) {
+        availableIndices.push(j);
+      }
+    }
+    
+    if (availableIndices.length === 0) {
+      break;  // No more words available
+    }
+
+    let targetIndex;
+    
+    // If baseIndex is available, use it or find nearby available index
+    if (availableIndices.includes(baseIndex)) {
+      targetIndex = baseIndex;
+    } else {
+      // Find the closest available index to baseIndex
+      let minDistance = Infinity;
+      let closestIndex = availableIndices[0];
+      
+      for (const idx of availableIndices) {
+        const distance = Math.abs(idx - baseIndex);
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestIndex = idx;
+        }
+      }
+      targetIndex = closestIndex;
+    }
+    
+    usedIndices.add(targetIndex);
+    randomWords.push(wordArray[targetIndex]);
   }
 
   return randomWords;
@@ -1050,6 +1245,9 @@ function loadCustomPrompts() {
 
       // Load the template prompt
       document.getElementById('promptTemplate').value = data.template;
+      
+      // Update move buttons after loading
+      setTimeout(() => updateAllMoveButtons(), 0);
     };
     reader.readAsText(file);
   });
@@ -1100,6 +1298,9 @@ function addCustomPrompts() {
       // Load the template prompt
       const templateInput = document.getElementById('promptTemplate');
       templateInput.value += '\n' + data.template; // Append the loaded template prompt
+      
+      // Update move buttons after adding
+      setTimeout(() => updateAllMoveButtons(), 0);
     };
     reader.readAsText(file);
   });
@@ -1163,6 +1364,9 @@ window.addEventListener('load', () => {
 
   // Load the template prompt
   document.getElementById('promptTemplate').value = data.template;
+  
+  // Update move buttons after loading from localStorage
+  setTimeout(() => updateAllMoveButtons(), 0);
 });
 
 // ============================================================================
@@ -1182,6 +1386,9 @@ function restoreDefaultLayout() {
     const categoryComponent = createCategoryComponent(categoryName);
     categoriesContainer.appendChild(categoryComponent);
   }
+  
+  // Update move buttons after restoring
+  setTimeout(() => updateAllMoveButtons(), 0);
 }
 
 function restoreAdvancedLayout() {
@@ -1200,6 +1407,9 @@ function restoreAdvancedLayout() {
       populateFieldsRandomly(categoryName);
     }
   }
+  
+  // Update move buttons after restoring advanced layout
+  setTimeout(() => updateAllMoveButtons(), 0);
 }
 
 function restoreDefaultLayoutWithTemplate() {
@@ -1240,7 +1450,7 @@ function addAllToTemplate() {
     // If the checkbox is checked, add the category name to the array
     if (includeCheckbox && includeCheckbox.checked) {
       // Find the category name header in the container
-      const categoryName = categoryContainer.querySelector('.category-header').innerText;
+      const categoryName = categoryContainer.querySelector('.category-header-name').innerText;
 
       // Add the category name to the array
       categoryNames.push(`[${categoryName}]`);
@@ -1347,6 +1557,8 @@ undoClearAllButton.addEventListener('click', undoClearAll);
 document.addEventListener('DOMContentLoaded', (event) => {
   const numPromptsInput = document.getElementById('numPrompts');
   const numWordsInput = document.getElementById('numWords');
+  const randomnessSlider = document.getElementById('randomness');
+  const randomnessLabel = document.getElementById('randomnessLabel');
 
   numPromptsInput.addEventListener('input', () => {
     if (numPromptsInput.value > 1000) {
@@ -1359,4 +1571,20 @@ document.addEventListener('DOMContentLoaded', (event) => {
       numWordsInput.value = 20000;
     }
   });
+
+  // Handle randomness slider
+  if (randomnessSlider && randomnessLabel) {
+    randomnessSlider.addEventListener('input', (e) => {
+      randomness = parseFloat(e.target.value);
+      if (randomness === 0) {
+        randomnessLabel.textContent = 'Sequential';
+      } else if (randomness < 0.4) {
+        randomnessLabel.textContent = 'Low';
+      } else if (randomness < 0.8) {
+        randomnessLabel.textContent = 'Medium';
+      } else {
+        randomnessLabel.textContent = 'Full chaos';
+      }
+    });
+  }
 });
