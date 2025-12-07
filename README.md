@@ -1,11 +1,13 @@
 # Prompt-Generator-for-AI-Text-to-Image-Models
 Try it here! [https://aipromptgenerator.art](https://aipromptgenerator.art)
 -
-A simple, modular, customizable app to help you generate prompts quickly and easily for [Stable Diffusion](https://stability.ai/), [Midjourney](https://www.midjourney.com/home/?callbackUrl=%2Fapp%2F), and [Dall-E 2](https://openai.com/product/dall-e-2).
+A simple, modular, private, customizable app to help you generate prompts quickly and easily for [Stable Diffusion](https://stability.ai/), [Midjourney](https://www.midjourney.com/home/?callbackUrl=%2Fapp%2F), [Z-Image](https://z-image.ai/), or any.
 
 # Prompt Generator
 
-A versatile and easy-to-use tool designed to generate interesting random custom prompts for AI image generation software, very useful for testing models! Works for [Stable Diffusion](https://stability.ai/), [Midjourney](https://www.midjourney.com/home/?callbackUrl=%2Fapp%2F), and [Dall-E 2](https://openai.com/product/dall-e-2). It lets you work as meticuluously or as lax as you want to, giving great and varied results with just a few clicks.
+A versatile, zero-bloat, and easy-to-use tool designed to generate interesting randomized custom prompts for any AI image generation software, very useful for testing models! It works for basically any T2I AI image generation software like [Stable Diffusion](https://stability.ai/), [Midjourney](https://www.midjourney.com/home/?callbackUrl=%2Fapp%2F), [Z-Image](https://z-image.ai/).
+
+**The Philosophy:** Work as meticulously or as relaxed as you want. Craft your prompt templates carefully, save your prompt layouts, lock specific keywords, or just mash the "Randomize" and "Generate" button and see what happens.
 
 ## Quick Start
 
@@ -69,34 +71,64 @@ The sidebar offers a range of convenient features to streamline your workflow:
 
 ### Custom Prompt Template
 
-The other star of the show. In short it works a bit like Mad Libs, where you specify whatever structure you wish your prompt to have and reference the `[CATEGORY]` you wish in square brackets (e.g. `[SUBJECTS], [CLOTHING],` etc.) so that the prompt generator fills that space with a random word or phrase from said container.
+Modern models prefer natural language over a "tag salad" from the SD 1.5 days.  The template system handles this perfectly:
+
+In short it works a bit like Mad Libs, where you specify whatever structure you wish your prompt to have and reference the `[CATEGORY]` you wish in square brackets (e.g. `[SUBJECTS], [CLOTHING],` etc.) so that the prompt generator fills that space with a random word or phrase from said container.
 
 The placeholder shows a suggested sentence structure: 
 
-- Seed: `[SUBJECTS], [CLOTHING], with [PROPS], in a beautiful [SETTINGS], [SCENE]`
+- Seed: `A [SUBJECTS] wearing a [CLOTHING] holding [PROPS] [ACTION] in a beautiful [SETTINGS], [SCENE]`
 
 Which after generation can look like this: 
 
-- Result: `Adventurer, red shirt, with hiking stick, in a beautiful forest, spring.`
+- Result: `A brave explorer wearing a red shirt holding a hiking stick walking in a beautiful forest, spring.`
 
-As you create more detailed templates you can modify the weight of each word with brackets or numbers if you want and it will still work, like this: 
+You can add style, camera, and mood cues without resorting to weight syntax:
 
-- Seed: `(masterpiece, best quality:1.2), (([SUBJECTS])), [CLOTHING], with [PROPS], in a (beautiful [SETTINGS]), [SCENE]`
-- Result: `(masterpiece, best quality:1.2), ((Adventurer)), red shirt, with hiking stick, in a (beautiful forest), spring`
+- **Seed:**  
+  `Highly detailed illustration of [SUBJECTS] [ACTIONS] in [SETTINGS], [LIGHTING], [VISUAL STYLE], mood is [MOOD].`
 
-You can create templates with LoRa tags and trigger words as well:
+- **Result:**  
+  `Highly detailed illustration of a lone astronaut walking across a frozen desert at dusk, soft rim lighting, cinematic concept art, mood is melancholic but hopeful.`
 
-- Seed: `(masterpiece, best quality:1.2), lora trigger word, [SUBJECTS]:0.95, [CLOTHING], with [PROPS], in a [SETTINGS]:0.4, [SCENE] <loracharacter:0.6> <lorastyle:0.5>`
-- Result: `(masterpiece, best quality:1.2), lora trigger word, Adventurer:0.95, red shirt, with hiking stick, in a beautiful forest:0.4, spring <loracharacter:0.6> <lorastyle:0.5>`
+You can introduce more categories as you need them, for example:
 
-You can go as detailed as you want, like with a long Deforum prompt:
+- `[ACTIONS]` – what the subject is doing  
+- `[LIGHTING]` – “golden hour”, “overcast”, “neon-lit”, etc.  
+- `[VISUAL STYLE]` – “painterly digital art”, “anime-style”, “photorealistic”  
+- `[MOOD]` – “serene”, “ominous”, “playful”, etc.
 
-- Seed: `"0": "[SUBJECTS], [POSES] in a [SETTINGS], [VISUAL STYLES], [PENS], [ARTISTS]",
-    "30": "[SUBJECTS2], "lora trigger word" [POSES2] in a [SETTINGS2], [VISUAL STYLES2], [PENS2], [ARTISTS2], [EMOTIONS], [DRAWING STYLES] <LORA:0.6>", "60": "[SUBJECTS3], [POSES2], in a [SETTINGS2], [VISUAL STYLES3], [ARTISTS3] --neg [CAMERAS], [ETCHINGS]", "90": "[SUBJECTS4], [PROPS], [ARTISTS]"`
-- Result: `"0": "a strong greek god, wrestling in a Mountain Range, Stuckist, Pastel Art, by Caravaggio",
-    "30": "caveman, taking_a_selfie standing in a futuristic city, Visual Novel, Ink, by Banksy, surprised, cel shading <SelfiesLORA:0.6>", "60": "tiger, jumping, in a frozen lake, fauvist, by Pixar Animation Studios --neg Fisheye Lens, Paper Model", "90": "urban ninja, laser sword, by Caravaggio"`
-    
-(Notice that "by Caravaggio" is repeated since in the Template Box the Category `[ARTISTS]` was repeated as well, you need to duplicate the container so you get `[ARTISTS2]`, `[ARTISTS3]`, etc. or create new containers in case you want different results.)
+
+**Short text-to-video template**
+
+You can also build templates for text-to-video models.  
+Short, continuous 3–5 second clips with no cuts usually work best, so the template focuses on:
+
+- subject  
+- action  
+- setting  
+- camera motion  
+- mood & atmosphere  
+
+For example:
+
+- **Seed:**  
+  `Short cinematic shot of [SUBJECTS] [ACTIONS] in [SETTINGS]. Smooth [CAMERA MOVES], [LIGHTING], atmosphere is [MOOD]. No cuts, continuous shot.`
+
+- **Result:**  
+  `Short cinematic shot of a cyborg panda standing on a rainy rooftop in a neon city. Smooth handheld camera slowly circling her, cool blue night lighting, atmosphere is introspective and calm. No cuts, continuous shot.`
+
+This kind of natural-language structure works nicely for modern T2V models like Google Veo 3.1 (and other text-to-video models) while still giving you the flexibility of randomization via categories like:
+
+- `[SUBJECTS]` – “street dancer”, “robot dog”, “old fisherman”, etc.  
+- `[ACTIONS]` – “spinning in the rain”, “staring at the horizon”, “walking toward the camera”  
+- `[SETTINGS]` – “crowded night market”, “misty mountain pass”, “busy subway platform”  
+- `[CAMERA MOVES]` – “slow dolly forward”, “steady aerial shot”, “gentle handheld orbit”  
+- `[LIGHTING]` – “soft morning light”, “harsh midday sun”, “neon backlight”  
+- `[MOOD]` – “mysterious”, “romantic”, “anxious”, “peaceful”
+
+The app doesn’t care which model you use or how fancy your template is:  
+as long as you wrap your category names in `[BRACKETS]`, it will happily shuffle your words and spit out new variations in the structure you designed.
 
 ![Add to Template](./assets/addtotemplate3.gif)
 
@@ -116,9 +148,9 @@ You can also leave the Prompt Template box empty if you just want to generate ra
 
 ## Sample Images
 
-I have added a quick collage of images that I quickly generated by just clicking the randomize and generate button a few times just for this repo, so that you can see the versatility and variety. You can hover to see the prompt that was used for each image.
+I have added a quick collage of images that I quickly generated by just clicking the randomize and generate button a few times for this repo, so that you can see the versatility and variety. You can hover to see the prompt that was used for each image.
 
-The models I used are all homemade blends from other maintstream models, but the originals are way better. My go-to models are: epic diffusion, counterfeitv30, rpgv4, vintedois, midjourneyv4, and redshift diffusion. You can get them from [Civitai](https://civitai.com/) or [Hugging Face](https://huggingface.co/models?pipeline_tag=text-to-image&p=1&sort=downloads).
+You can get local T2I or T2V AI models from [Civitai](https://civitai.com/) or [Hugging Face](https://huggingface.co/models?pipeline_tag=text-to-image&p=1&sort=downloads) and run them on [ComfyUI](https://www.comfy.org/).
 
 <!-- Image Collage -->
 <div align="center">
@@ -143,12 +175,6 @@ The models I used are all homemade blends from other maintstream models, but the
     <!-- Add more images here -->
   </p>
 </div>
-
-<p align="center">
-  <img src="./assets/deforumresult1.gif" />
-    <br>
-    <em>*(In case you were curious about the result of that weird Deforum prompt I made up as an example.)*</em>
-</p>
 
 ## Keyboard Shortcuts
 
@@ -203,7 +229,9 @@ Tested primarily in Windows with the latest version of Chrome. Some light testin
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Due to time constraints, I am not capable of actively monitoring issues or reviewing pull requests. 
+
+However, the code is Open Source (MIT)! Please feel free to **fork the repo** and modify it to your heart's content.
 
 ## Credits
 
@@ -211,4 +239,4 @@ The slider used on this website is based on the Quiet Swan 35 slider developed b
 
 ## License
 
-[GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
+[MIT License](https://opensource.org/licenses/MIT)

@@ -1,18 +1,39 @@
+// ============================================================================
+// CONFIG & CONSTANTS
+// ============================================================================
+const categoryNames = ['SUBJECTS', 'CLOTHING', 'PROPS', 'POSES', 'SETTINGS', 'SCENE'];
+const advancedCategoryNames = ["ARTISTS", "CGI RENDERINGS", "CGI SOFTWARES", "CAMERAS", "CARVINGS AND ETCHINGS", "COLORS", "DRAWING STYLES", "EMOTIONS", "PENS", "VISUAL STYLES"];
+
+// ============================================================================
+// GLOBAL STATE
+// ============================================================================
 let removedCategories = [];
 let removedText = {}; // Object to store the removed text for each category
 let textUndoStack = {}; // Change this to an object
 let textRedoStack = {}; // Change this to an object
 let duplicateCounters = {};
-
-const templateTextArea = document.getElementById('promptTemplate');
-
-// Define an array of category names to be used in the application
-const categoryNames = ['SUBJECTS', 'CLOTHING', 'PROPS', 'POSES', 'SETTINGS', 'SCENE'];
-const advancedCategoryNames = ["ARTISTS", "CGI RENDERINGS", "CGI SOFTWARES", "CAMERAS", "CARVINGS AND ETCHINGS", "COLORS", "DRAWING STYLES", "EMOTIONS", "PENS", "VISUAL STYLES"];
-
 let categoryIdCounter = 0;
+let dragCategory; // Variable to store the dragged category container
 
-// Function to create a new category component
+// ============================================================================
+// DOM REFERENCES
+// ============================================================================
+const templateTextArea = document.getElementById('promptTemplate');
+const categoriesContainer = document.getElementById('categories');
+const buttonSection = document.querySelector('.button-section');
+const lockAllBtn = document.getElementById('lockAllBtn');
+const IncludeAllBtn = document.getElementById('IncludeAllBtn');
+const spellcheckToggleBtn = document.getElementById('spellcheckToggleBtn');
+const addPromptsButton = document.getElementById('addPromptsButton');
+const randomizeBtn = document.getElementById("randomizeBtn");
+const undoRemoveButton = document.getElementById('undoRemoveButton');
+const undoRemoveAllButton = document.getElementById('undoRemoveAllButton');
+const undoClearAllButton = document.getElementById('undoClearAllButton');
+
+// ============================================================================
+// CATEGORY UI CORE
+// ============================================================================
+
 function createCategoryComponent(categoryName) {
   const container = document.createElement('div');
 
@@ -255,7 +276,190 @@ function createCategoryComponent(categoryName) {
   return container;
 }
 
-// Function to handle the input event
+function dragStart(event) {
+  if (event.target.classList.contains('category-header')) {
+    dragCategory = event.target.closest('.category-container');
+    dragCategory.classList.add('dragging');
+  }
+}
+
+function dragOver(event) {
+  if (dragCategory) {
+    event.preventDefault();
+    // Highlight the potential drop target
+    const targetCategory = event.target.closest('.category-container');
+    if (targetCategory) {
+      targetCategory.classList.add('over');
+    }
+  }
+}
+
+function drop(event) {
+  if (dragCategory) {
+    event.preventDefault();
+    const targetCategory = event.target.closest('.category-container');
+    const categoriesContainer = targetCategory.parentNode;
+    const rect = targetCategory.getBoundingClientRect();
+    const dropPosition = event.clientY - rect.top > rect.height / 2 ? 'after' : 'before';
+
+    // Remove the highlighting from the drop target
+    targetCategory.classList.remove('over');
+
+    if (dropPosition === 'after') {
+      categoriesContainer.insertBefore(dragCategory, targetCategory.nextSibling);
+    } else {
+      categoriesContainer.insertBefore(dragCategory, targetCategory);
+    }
+
+    // Remove the dragging style from the dropped item
+    dragCategory.classList.remove('dragging');
+    dragCategory = null;
+  }
+}
+
+function dragEnd(event) {
+  if (dragCategory) {
+    // Remove the dragging style from the dragged item
+    dragCategory.classList.remove('dragging');
+    dragCategory = null;
+  }
+}
+
+function dragLeave(event) {
+  if (dragCategory) {
+    // Remove the over class when the dragged item leaves a potential drop target
+    const targetCategory = event.target.closest('.category-container');
+    if (targetCategory) {
+      targetCategory.classList.remove('over');
+    }
+  }
+}
+
+function duplicateCategory(activeCategory) {
+  // Extract the original category name
+  let originalCategoryName = activeCategory.querySelector('.category-header').textContent;
+
+  let duplicateCategoryName = originalCategoryName;
+  let duplicateCount = 2;
+
+  // Create a list of all existing category names
+  let existingCategoryNames = Array.from(document.querySelectorAll('.category-header')).map(header => header.textContent);
+
+  // Continue incrementing the duplicate count until we find a name that doesn't exist
+  while (existingCategoryNames.includes(duplicateCategoryName + duplicateCount)) {
+    duplicateCount++;
+  }
+
+  duplicateCategoryName = originalCategoryName + duplicateCount;
+
+  // Create a new category with the duplicated name
+  const categoryComponent = createCategoryComponent(duplicateCategoryName);
+
+  // Add the fade-in-animation class to the new category container
+  categoryComponent.classList.add('fade-in-animation-btn');
+
+  // Copy the contents of the original category to the duplicated category
+  let originalTextArea = activeCategory.querySelector('textarea');
+  let duplicateTextArea = categoryComponent.querySelector('textarea');
+  duplicateTextArea.value = originalTextArea.value;
+
+  // Copy the state of the 'include' and 'lock' checkboxes
+  let originalIncludeCheckbox = activeCategory.querySelector('.include-category');
+  let duplicateIncludeCheckbox = categoryComponent.querySelector('.include-category');
+  duplicateIncludeCheckbox.checked = originalIncludeCheckbox.checked;
+
+  let originalLockCheckbox = activeCategory.querySelector('.lock-category');
+  let duplicateLockCheckbox = categoryComponent.querySelector('.lock-category');
+  duplicateLockCheckbox.checked = originalLockCheckbox.checked;
+
+  // Trigger the onchange event for the lock checkbox
+  duplicateLockCheckbox.dispatchEvent(new Event('change'));
+  duplicateIncludeCheckbox.dispatchEvent(new Event('input'));
+
+  // Find the index of the active category
+  let activeCategoryIndex = Array.from(categoriesContainer.children).indexOf(activeCategory);
+
+  // Find the position of the last duplicate of the active category
+  let insertIndex = activeCategoryIndex + 1;
+  while (insertIndex < categoriesContainer.children.length &&
+    categoriesContainer.children[insertIndex].querySelector('.category-header').textContent.startsWith(originalCategoryName)) {
+    insertIndex++;
+  }
+
+  // Insert the new category at the correct position
+  if (insertIndex < categoriesContainer.children.length) {
+    categoriesContainer.insertBefore(categoryComponent, categoriesContainer.children[insertIndex]);
+  } else {
+    categoriesContainer.appendChild(categoryComponent);
+  }
+}
+
+function addCategory() {
+  const categoryName = prompt('Enter the category name:');
+  if (!categoryName) return;
+
+  // Transform to uppercase and limit to 2000 characters
+  const formattedCategoryName = categoryName.toUpperCase().substring(0, 2000);
+
+  // Check if a category with the same name already exists
+  const existingCategory = document.querySelector(`textarea[data-category='${formattedCategoryName}']`);
+  if (existingCategory) {
+    // If it does, show a warning and ask the user to confirm
+    const confirmDuplicate = confirm(`A category named "${formattedCategoryName}" already exists. Are you sure you want to add another one?`);
+    if (!confirmDuplicate) return;
+  }
+
+  const categoryComponent = createCategoryComponent(formattedCategoryName);
+  categoriesContainer.appendChild(categoryComponent);
+}
+
+function removeAllCategories() {
+  const categoriesContainer = document.getElementById('categories');
+
+  // Store the removed categories along with their original index
+  removedCategories = Array.from(categoriesContainer.children).map((child, index) => ({ element: child, originalIndex: index }));
+
+  // Remove all existing categories
+  while (categoriesContainer.firstChild) {
+    categoriesContainer.removeChild(categoriesContainer.firstChild);
+  }
+}
+
+function undoRemove() {
+  if (removedCategories.length > 0) {
+    const lastRemoved = removedCategories.pop();
+
+    // If the removed category was the last in the list, we can append it
+    if (lastRemoved.index === categoriesContainer.children.length) {
+      categoriesContainer.appendChild(lastRemoved.category);
+    } else {
+      // Otherwise, we insert it at the original position
+      categoriesContainer.insertBefore(lastRemoved.category, categoriesContainer.children[lastRemoved.index]);
+    }
+  }
+}
+
+function undoRemoveAll() {
+  const categoriesContainer = document.getElementById('categories');
+
+  // Restore all removed categories to their original positions
+  // Sort the removedCategories array in reverse order of originalIndex before reinserting,
+  // to ensure elements are inserted in the correct position
+  removedCategories.sort((a, b) => b.originalIndex - a.originalIndex);
+  while (removedCategories.length > 0) {
+    const { element, originalIndex } = removedCategories.pop();
+    if (originalIndex < categoriesContainer.children.length) {
+      categoriesContainer.insertBefore(element, categoriesContainer.children[originalIndex]);
+    } else {
+      categoriesContainer.appendChild(element);
+    }
+  }
+}
+
+// ============================================================================
+// TEXT EDITING & UNDO/REDO
+// ============================================================================
+
 function handleInput(event) {
   const textarea = event.target;
   const categoryId = textarea.id;
@@ -349,124 +553,204 @@ function handleKeyDown(event) {
   }
 }
 
-let dragCategory; // Variable to store the dragged category container
-
-function dragStart(event) {
-  if (event.target.classList.contains('category-header')) {
-    dragCategory = event.target.closest('.category-container');
-    dragCategory.classList.add('dragging');
-  }
-}
-
-function dragOver(event) {
-  if (dragCategory) {
-    event.preventDefault();
-    // Highlight the potential drop target
-    const targetCategory = event.target.closest('.category-container');
-    if (targetCategory) {
-      targetCategory.classList.add('over');
-    }
-  }
-}
-
-function drop(event) {
-  if (dragCategory) {
-    event.preventDefault();
-    const targetCategory = event.target.closest('.category-container');
-    const categoriesContainer = targetCategory.parentNode;
-    const rect = targetCategory.getBoundingClientRect();
-    const dropPosition = event.clientY - rect.top > rect.height / 2 ? 'after' : 'before';
-
-    // Remove the highlighting from the drop target
-    targetCategory.classList.remove('over');
-
-    if (dropPosition === 'after') {
-      categoriesContainer.insertBefore(dragCategory, targetCategory.nextSibling);
-    } else {
-      categoriesContainer.insertBefore(dragCategory, targetCategory);
-    }
-
-    // Remove the dragging style from the dropped item
-    dragCategory.classList.remove('dragging');
-    dragCategory = null;
-  }
-}
-
-function dragEnd(event) {
-  if (dragCategory) {
-    // Remove the dragging style from the dragged item
-    dragCategory.classList.remove('dragging');
-    dragCategory = null;
-  }
-}
-
-function dragLeave(event) {
-  if (dragCategory) {
-    // Remove the over class when the dragged item leaves a potential drop target
-    const targetCategory = event.target.closest('.category-container');
-    if (targetCategory) {
-      targetCategory.classList.remove('over');
-    }
-  }
-}
-
 // Create category components and append them to the categories container
-const categoriesContainer = document.getElementById('categories');
 categoryNames.forEach(categoryName => {
   const categoryComponent = createCategoryComponent(categoryName);
   categoriesContainer.appendChild(categoryComponent);
 });
 
-// Add event listeners and logic for the action buttons
-document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
-document.getElementById('generateBtn').addEventListener('click', generatePrompts);
-document.getElementById('clearHistoryBtn').addEventListener('click', clearHistory);
-document.getElementById('clearAllBtn').addEventListener('click', clearAll);
-document.getElementById('saveCustomPromptsBtn').addEventListener('click', saveCustomPrompts);
-document.getElementById('loadCustomPromptsBtn').addEventListener('click', loadCustomPrompts);
-document.getElementById('saveAllBtn').addEventListener('click', saveAll);
-document.getElementById('removeAllBtn').addEventListener('click', removeAllCategories);
+// ============================================================================
+// KEYBOARD SHORTCUTS - Consolidated hotkey handler
+// ============================================================================
+// All Shift+Alt keyboard shortcuts are handled in one place for better organization
+// ============================================================================
 
-window.addEventListener('keydown', function (event) {
-  if (event.shiftKey && event.altKey) { // Check if Shift and Alt keys are down
-    switch (event.code) {
-      case 'KeyQ': // If 'q' is pressed
-        undoClearAll();
-        event.preventDefault(); // Prevent the default action
-        break;
-      case 'KeyE': // If 'e' is pressed
-        undoRemove();
-        event.preventDefault(); // Prevent the default action
-        break;
-      case 'Digit5': // If 't' is pressed
-        undoRemoveAll();
-        event.preventDefault(); // Prevent the default action
-        break;
-      default:
-        // Do nothing for other keys
-        break;
+document.addEventListener('keydown', function (event) {
+  // Only process if both Shift and Alt are held down
+  if (!event.shiftKey || !event.altKey) {
+    return;
+  }
+
+  // Get active textarea for context-aware operations
+  const textarea = document.activeElement;
+  const isTextarea = textarea.tagName === 'TEXTAREA';
+  const category = isTextarea ? textarea.closest('.category') : null;
+
+  // ========================================================================
+  // UNDO/REDO OPERATIONS
+  // ========================================================================
+  switch (event.code) {
+    case 'KeyQ': // Undo Clear All
+      undoClearAll();
+      event.preventDefault();
+      return;
+    case 'KeyE': // Undo Remove (single category)
+      undoRemove();
+      event.preventDefault();
+      return;
+    case 'Digit5': // Undo Remove All (all categories)
+      undoRemoveAll();
+      event.preventDefault();
+      return;
+  }
+
+  // ========================================================================
+  // CATEGORY OPERATIONS (Context-aware - requires textarea focus)
+  // ========================================================================
+  if (isTextarea && category) {
+    switch (event.key.toLowerCase()) {
+      case 'k': // Toggle Lock for active category
+        const lockCheckbox = category.querySelector('.lock-category');
+        if (lockCheckbox) {
+          lockCheckbox.checked = !lockCheckbox.checked;
+          lockCheckbox.dispatchEvent(new Event('change'));
+        }
+        event.preventDefault();
+        return;
+
+      case 'u': // Toggle Include/Exclude for active category
+        const includeCheckbox = category.querySelector('.include-category');
+        if (includeCheckbox) {
+          includeCheckbox.checked = !includeCheckbox.checked;
+          includeCheckbox.dispatchEvent(new Event('input'));
+        }
+        event.preventDefault();
+        return;
+
+      case 'x': // Delete active category
+        const removeButton = category.querySelector('.category-remove-button');
+        if (removeButton) {
+          const index = Array.from(categoriesContainer.children).indexOf(category);
+          removedCategories.push({ category: category, index: index });
+          category.remove();
+        }
+        event.preventDefault();
+        return;
+
+      case 't': // Add active category to template
+        const categoryName = category.querySelector('.category-header').textContent;
+        let currentTemplate = templateTextArea.value;
+        currentTemplate = currentTemplate.replace(/^,\s*/, '');
+        currentTemplate += (currentTemplate === '' ? '' : ', ') + `[${categoryName}]`;
+        templateTextArea.value = currentTemplate;
+        
+        // Auto-resize template textarea
+        const textareaLineHeight = parseInt(getComputedStyle(templateTextArea).lineHeight);
+        const minHeight = textareaLineHeight * 1;
+        const newHeight = Math.max(minHeight, templateTextArea.scrollHeight);
+        templateTextArea.style.height = newHeight + "px";
+        
+        // Add animation
+        category.classList.add('fade-in-animation-container');
+        setTimeout(() => {
+          category.classList.remove('fade-in-animation-container');
+        }, 500);
+        event.preventDefault();
+        return;
+
+      case 'b': // Duplicate active category
+        duplicateCategory(category);
+        event.preventDefault();
+        return;
     }
+  }
+
+  // ========================================================================
+  // TEMPLATE OPERATIONS
+  // ========================================================================
+  switch (event.key.toLowerCase()) {
+    case 'a': // Add all included categories to template
+      addAllToTemplate();
+      event.preventDefault();
+      return;
+  }
+
+  // ========================================================================
+  // FILE OPERATIONS
+  // ========================================================================
+  switch (event.code) {
+    case 'KeyS': // Save Custom Prompts (to file)
+      saveCustomPrompts();
+      event.preventDefault();
+      return;
+    case 'KeyO': // Load Custom Prompts (from file)
+      loadCustomPrompts();
+      event.preventDefault();
+      return;
+    case 'KeyM': // Save All (to localStorage)
+      saveAll();
+      event.preventDefault();
+      return;
+    case 'Digit2': // Add Custom Prompts (append from file)
+      addCustomPrompts();
+      event.preventDefault();
+      return;
+  }
+
+  // ========================================================================
+  // LAYOUT OPERATIONS
+  // ========================================================================
+  switch (event.code) {
+    case 'KeyD': // Restore Default Layout
+      restoreDefaultLayout();
+      event.preventDefault();
+      return;
+    case 'Digit4': // Restore Advanced Layout
+      restoreAdvancedLayout();
+      event.preventDefault();
+      return;
+    case 'Digit0': // Restore Default Layout with Template
+      restoreDefaultLayoutWithTemplate();
+      event.preventDefault();
+      return;
+  }
+
+  // ========================================================================
+  // GENERAL OPERATIONS
+  // ========================================================================
+  switch (event.code) {
+    case 'KeyC': // Clear All
+      clearAll();
+      event.preventDefault();
+      return;
+    case 'KeyW': // Randomize fields
+      populateFieldsRandomly();
+      event.preventDefault();
+      return;
+    case 'KeyG': // Generate prompts
+      generatePrompts();
+      event.preventDefault();
+      return;
+    case 'KeyH': // Clear History
+      clearHistory();
+      event.preventDefault();
+      return;
+    case 'KeyL': // Toggle Lock All categories
+      toggleLockAll();
+      event.preventDefault();
+      return;
+    case 'KeyP': // Toggle Include/Exclude All categories
+      toggleIncludeAll();
+      event.preventDefault();
+      return;
+    case 'KeyN': // Add new category
+      addCategory();
+      event.preventDefault();
+      return;
+    case 'KeyY': // Remove All categories
+      removeAllCategories();
+      event.preventDefault();
+      return;
+    case 'Digit7': // Toggle spellcheck
+      toggleSpellcheck();
+      event.preventDefault();
+      return;
   }
 });
 
-function addCategory() {
-  const categoryName = prompt('Enter the category name:');
-  if (!categoryName) return;
-
-  // Transform to uppercase and limit to 2000 characters
-  const formattedCategoryName = categoryName.toUpperCase().substring(0, 2000);
-
-  // Check if a category with the same name already exists
-  const existingCategory = document.querySelector(`textarea[data-category='${formattedCategoryName}']`);
-  if (existingCategory) {
-    // If it does, show a warning and ask the user to confirm
-    const confirmDuplicate = confirm(`A category named "${formattedCategoryName}" already exists. Are you sure you want to add another one?`);
-    if (!confirmDuplicate) return;
-  }
-
-  const categoryComponent = createCategoryComponent(formattedCategoryName);
-  categoriesContainer.appendChild(categoryComponent);
-}
+// ============================================================================
+// PROMPT GENERATION & HISTORY
+// ============================================================================
 
 function generatePrompts() {
   const numPrompts = parseInt(document.getElementById('numPrompts').value, 10);
@@ -534,23 +818,6 @@ function generatePrompts() {
     promptHistoryContainer.innerHTML += prompt.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '<br>';
   }
 }
-
-document.addEventListener('DOMContentLoaded', (event) => {
-  const numPromptsInput = document.getElementById('numPrompts');
-  const numWordsInput = document.getElementById('numWords');
-
-  numPromptsInput.addEventListener('input', () => {
-    if (numPromptsInput.value > 1000) {
-      numPromptsInput.value = 1000;
-    }
-  });
-
-  numWordsInput.addEventListener('input', () => {
-    if (numWordsInput.value > 20000) {
-      numWordsInput.value = 20000;
-    }
-  });
-});
 
 function autoAdjustTextareaHeight(textarea) {
   textarea.style.height = 'auto';
@@ -635,6 +902,58 @@ function undoClearAll() {
 
   removedText = {}; // Clear the stored removed text
 }
+
+// ============================================================================
+// RANDOMIZER
+// ============================================================================
+
+function populateFieldsRandomly(specificCategory) {
+  // Get the number of words to insert from the new input field
+  const numWordsToInsert = document.getElementById('numWords').value;
+
+  // Extract the base category name without the numeric suffix if specificCategory is defined
+  let baseCategory = specificCategory ? specificCategory.replace(/\d+$/, '') : undefined;
+
+  // Loop through each key in the data object
+  for (const key in data) {
+    // If a specific category is specified, and this isn't it, skip it
+    if (specificCategory !== undefined && key !== specificCategory) continue;
+
+    // Get the corresponding textarea element by ID
+    const textareas = document.querySelectorAll(`textarea[data-category='${key}']`);
+
+    textareas.forEach(textarea => {
+      const categoryElement = textarea.closest('.category');
+      const lockCheckbox = categoryElement.querySelector('.lock-category');
+      const includeCheckbox = categoryElement.querySelector('.include-category');
+
+      // If the lock checkbox is not checked and the include checkbox is checked, randomize the textarea value
+      if (!lockCheckbox.checked && includeCheckbox.checked) {
+        // Create an empty array to store the selected words
+        const selectedWords = [];
+        let dataCopy = [...data[key]]; // Copy the array
+
+        // Add random words to the array
+        for (let i = 0; i < numWordsToInsert && dataCopy.length > 0; i++) {
+          const randomIndex = Math.floor(Math.random() * dataCopy.length);
+          selectedWords.push(dataCopy[randomIndex]);
+          dataCopy.splice(randomIndex, 1); // Remove the selected word from the copy
+        }
+
+        // Set the textarea's value to the selected words, joined by commas
+        textarea.value = selectedWords.join(', ');
+        // Save the new state
+        if (!textUndoStack[textarea.id]) textUndoStack[textarea.id] = [];
+        textUndoStack[textarea.id].push(textarea.value);
+      }
+    });
+
+  }
+}
+
+// ============================================================================
+// PERSISTENCE: FILES
+// ============================================================================
 
 async function saveCustomPrompts() {
   const categories = document.querySelectorAll('.category');
@@ -788,6 +1107,10 @@ function addCustomPrompts() {
   input.click();
 }
 
+// ============================================================================
+// PERSISTENCE: LOCALSTORAGE
+// ============================================================================
+
 function saveAll() {
   const categories = document.querySelectorAll('.category');
   const categoryData = Array.from(categories).map(category => {
@@ -842,76 +1165,63 @@ window.addEventListener('load', () => {
   document.getElementById('promptTemplate').value = data.template;
 });
 
-function populateFieldsRandomly(specificCategory) {
-  // Get the number of words to insert from the new input field
-  const numWordsToInsert = document.getElementById('numWords').value;
+// ============================================================================
+// LAYOUT & VIEW HELPERS
+// ============================================================================
 
-  // Extract the base category name without the numeric suffix if specificCategory is defined
-  let baseCategory = specificCategory ? specificCategory.replace(/\d+$/, '') : undefined;
-
-  // Loop through each key in the data object
-  for (const key in data) {
-    // If a specific category is specified, and this isn't it, skip it
-    if (specificCategory !== undefined && key !== specificCategory) continue;
-
-    // Get the corresponding textarea element by ID
-    const textareas = document.querySelectorAll(`textarea[data-category='${key}']`);
-
-    textareas.forEach(textarea => {
-      const categoryElement = textarea.closest('.category');
-      const lockCheckbox = categoryElement.querySelector('.lock-category');
-      const includeCheckbox = categoryElement.querySelector('.include-category');
-
-      // If the lock checkbox is not checked and the include checkbox is checked, randomize the textarea value
-      if (!lockCheckbox.checked && includeCheckbox.checked) {
-        // Create an empty array to store the selected words
-        const selectedWords = [];
-        let dataCopy = [...data[key]]; // Copy the array
-
-        // Add random words to the array
-        for (let i = 0; i < numWordsToInsert && dataCopy.length > 0; i++) {
-          const randomIndex = Math.floor(Math.random() * dataCopy.length);
-          selectedWords.push(dataCopy[randomIndex]);
-          dataCopy.splice(randomIndex, 1); // Remove the selected word from the copy
-        }
-
-        // Set the textarea's value to the selected words, joined by commas
-        textarea.value = selectedWords.join(', ');
-        // Save the new state
-        if (!textUndoStack[textarea.id]) textUndoStack[textarea.id] = [];
-        textUndoStack[textarea.id].push(textarea.value);
-      }
-    });
-
-  }
-}
-
-// Add event listener to the "Add Custom Prompts" button
-const addPromptsButton = document.getElementById('addPromptsButton');
-addPromptsButton.addEventListener('click', addCustomPrompts);
-
-// Attach the populateFieldsRandomly function to the click event of the randomizeBtn
-const randomizeBtn = document.getElementById("randomizeBtn");
-randomizeBtn.addEventListener("click", () => populateFieldsRandomly());
-
-function removeAllCategories() {
+function restoreDefaultLayout() {
   const categoriesContainer = document.getElementById('categories');
-
-  // Store the removed categories along with their original index
-  removedCategories = Array.from(categoriesContainer.children).map((child, index) => ({ element: child, originalIndex: index }));
 
   // Remove all existing categories
   while (categoriesContainer.firstChild) {
     categoriesContainer.removeChild(categoriesContainer.firstChild);
   }
+
+  // Re-create the default categories
+  for (const categoryName of categoryNames) {
+    const categoryComponent = createCategoryComponent(categoryName);
+    categoriesContainer.appendChild(categoryComponent);
+  }
 }
 
-document.addEventListener('keydown', function (event) {
-  // Shift + Alt + 'Y' was pressed
-  if (event.shiftKey && event.altKey && event.key.toLowerCase() === 'y') {
-    removeAllCategories();
+function restoreAdvancedLayout() {
+  const categoriesContainer = document.getElementById('categories');
+
+  // Create a list of existing category names
+  const existingCategoryNames = Array.from(categoriesContainer.children).map(category => category.querySelector('label').textContent.replace(':', ''));
+
+  // Re-create the advanced categories only if they do not already exist
+  for (const categoryName of advancedCategoryNames) {
+    if (!existingCategoryNames.includes(categoryName)) {
+      const categoryComponent = createCategoryComponent(categoryName);
+      categoriesContainer.appendChild(categoryComponent);
+
+      // populate this category with random words
+      populateFieldsRandomly(categoryName);
+    }
   }
-});
+}
+
+function restoreDefaultLayoutWithTemplate() {
+  restoreDefaultLayout();
+  const promptTemplate = document.getElementById('promptTemplate');
+  promptTemplate.value = "";
+}
+
+function updateButtonSection() {
+  const scrollY = window.scrollY || window.pageYOffset;
+  if (scrollY > buttonSection.offsetTop) {
+    buttonSection.classList.add('fixed');
+  } else {
+    buttonSection.classList.remove('fixed');
+  }
+}
+
+window.addEventListener('scroll', updateButtonSection);
+
+// ============================================================================
+// TEMPLATE HELPERS
+// ============================================================================
 
 function addAllToTemplate() {
   const categoriesContainer = document.getElementById('categories');
@@ -959,75 +1269,18 @@ function addAllToTemplate() {
   templateTextArea.style.height = newHeight + "px";
 }
 
-document.getElementById('add-all-template-btn').addEventListener('click', addAllToTemplate);
+templateTextArea.addEventListener('input', function () {
+  templateTextArea.style.height = ''; // Reset the height to its default value
+  templateTextArea.style.overflowY = 'auto'; // Enable vertical scrolling if needed
 
-const promptTemplateTextArea = document.getElementById('promptTemplate');
-
-promptTemplateTextArea.addEventListener('input', function () {
-  promptTemplateTextArea.style.height = ''; // Reset the height to its default value
-  promptTemplateTextArea.style.overflowY = 'auto'; // Enable vertical scrolling if needed
-
-  const minHeight = parseInt(getComputedStyle(promptTemplateTextArea).lineHeight) * 1; // Set a minimum height for the textarea (e.g., 2 lines)
-  const newHeight = Math.max(minHeight, promptTemplateTextArea.scrollHeight);
-  promptTemplateTextArea.style.height = newHeight + 'px';
+  const minHeight = parseInt(getComputedStyle(templateTextArea).lineHeight) * 1; // Set a minimum height for the textarea (e.g., 2 lines)
+  const newHeight = Math.max(minHeight, templateTextArea.scrollHeight);
+  templateTextArea.style.height = newHeight + 'px';
 });
 
-
-document.addEventListener('keydown', function (event) {
-  // Shift + Alt + 'A' was pressed
-  if (event.shiftKey && event.altKey && event.key.toLowerCase() === 'a') {
-    addAllToTemplate();
-  }
-});
-
-window.addEventListener('keydown', function (event) {
-  // Only trigger if both Shift and Alt are held down
-  if (!event.shiftKey || !event.altKey) {
-    return;
-  }
-
-  switch (event.code) {
-    case 'KeyC': // Clear All button
-      clearAll();
-      break;
-    case 'KeyW': // Randomize button
-      populateFieldsRandomly();
-      break;
-    case 'KeyG': // Generate button
-      generatePrompts();
-      break;
-    case 'KeyH': // Clear History button
-      clearHistory();
-      break;
-    case 'KeyS': // Save Custom Prompts button
-      saveCustomPrompts();
-      break;
-    case 'KeyO': // Load Custom Prompts button
-      loadCustomPrompts();
-      break;
-    case 'KeyL': // Lock/Unlock all categories
-      toggleLockAll();
-      break;
-    case 'KeyP': // Include/Exclude all categories
-      toggleIncludeAll();
-      break;
-    case 'KeyM': // Save All
-      saveAll();
-      break;
-    case 'KeyN': // Add category
-      addCategory();
-      break;
-    case 'KeyD': // Add category
-      restoreDefaultLayout();
-      break;
-    case 'Digit4': // Add category
-      restoreAdvancedLayout();
-      break;
-    case 'Digit2': // Add category
-      addCustomPrompts();
-      break;
-  }
-});
+// ============================================================================
+// TOGGLE HELPERS
+// ============================================================================
 
 function toggleLockAll() {
   const categories = document.querySelectorAll('.category');
@@ -1039,8 +1292,8 @@ function toggleLockAll() {
     lockCheckbox.checked = lockAll;
     lockCheckbox.dispatchEvent(new Event('change')); // Manually trigger the onchange event
   });
-
 }
+
 function toggleIncludeAll() {
   const categories = document.querySelectorAll('.category');
   const firstIncludeCheckbox = categories[0].querySelector('.include-category');
@@ -1053,286 +1306,6 @@ function toggleIncludeAll() {
   });
 }
 
-const lockAllBtn = document.getElementById('lockAllBtn');
-lockAllBtn.addEventListener('click', toggleLockAll);
-
-const IncludeAllBtn = document.getElementById('IncludeAllBtn');
-IncludeAllBtn.addEventListener('click', toggleIncludeAll);
-
-function restoreDefaultLayout() {
-  const categoriesContainer = document.getElementById('categories');
-
-  // Remove all existing categories
-  while (categoriesContainer.firstChild) {
-    categoriesContainer.removeChild(categoriesContainer.firstChild);
-  }
-
-  // Re-create the default categories
-  for (const categoryName of categoryNames) {
-    const categoryComponent = createCategoryComponent(categoryName);
-    categoriesContainer.appendChild(categoryComponent);
-  }
-}
-
-function restoreAdvancedLayout() {
-  const categoriesContainer = document.getElementById('categories');
-
-  // Create a list of existing category names
-  const existingCategoryNames = Array.from(categoriesContainer.children).map(category => category.querySelector('label').textContent.replace(':', ''));
-
-  // Re-create the advanced categories only if they do not already exist
-  for (const categoryName of advancedCategoryNames) {
-    if (!existingCategoryNames.includes(categoryName)) {
-      const categoryComponent = createCategoryComponent(categoryName);
-      categoriesContainer.appendChild(categoryComponent);
-
-      // populate this category with random words
-      populateFieldsRandomly(categoryName);
-    }
-  }
-}
-
-document.getElementById("restoreDefaultLayoutBtn").addEventListener('click', restoreDefaultLayout);
-document.getElementById('advancedButton').addEventListener('click', restoreAdvancedLayout);
-
-// Add the code for freezing the left pane here
-const buttonSection = document.querySelector('.button-section');
-
-function updateButtonSection() {
-  const scrollY = window.scrollY || window.pageYOffset;
-  if (scrollY > buttonSection.offsetTop) {
-    buttonSection.classList.add('fixed');
-  } else {
-    buttonSection.classList.remove('fixed');
-  }
-}
-
-window.addEventListener('scroll', updateButtonSection);
-
-document.addEventListener('keydown', function (event) {
-  // Shift + Alt + 'K' was pressed
-  if (event.shiftKey && event.altKey && event.key.toLowerCase() === 'k') {
-    const textarea = document.activeElement;
-    if (textarea.tagName !== 'TEXTAREA') return; // Ignore if the focused element is not a textarea
-
-    const category = textarea.closest('.category');
-    if (!category) return; // Ignore if the textarea is not inside a category
-
-    const lockCheckbox = category.querySelector('.lock-category');
-    if (!lockCheckbox) return; // Ignore if there is no lock checkbox in the category
-
-    // Toggle the checkbox and manually trigger the onchange event
-    lockCheckbox.checked = !lockCheckbox.checked;
-    lockCheckbox.dispatchEvent(new Event('change'));
-  }
-});
-
-document.addEventListener('keydown', function (event) {
-  // Shift + Alt + 'U' was pressed
-  if (event.shiftKey && event.altKey && event.key.toLowerCase() === 'u') {
-    const textarea = document.activeElement;
-    if (textarea.tagName !== 'TEXTAREA') return; // Ignore if the focused element is not a textarea
-
-    const category = textarea.closest('.category');
-    if (!category) return; // Ignore if the textarea is not inside a category
-
-    const includeCheckbox = category.querySelector('.include-category');
-    if (!includeCheckbox) return; // Ignore if there is no include checkbox in the category
-
-    // Toggle the checkbox and manually trigger the input event
-    includeCheckbox.checked = !includeCheckbox.checked;
-    includeCheckbox.dispatchEvent(new Event('input'));
-  }
-});
-
-
-document.addEventListener('keydown', function (event) {
-  // Shift + Alt + 'X' was pressed
-  if (event.shiftKey && event.altKey && event.key.toLowerCase() === 'x') {
-    const textarea = document.activeElement;
-    if (textarea.tagName !== 'TEXTAREA') return; // Ignore if the focused element is not a textarea
-
-    const category = textarea.closest('.category');
-    if (!category) return; // Ignore if the textarea is not inside a category
-
-    const removeButton = category.querySelector('.category-remove-button');
-    if (!removeButton) return; // Ignore if there is no remove button in the category
-
-    // Get the index of the removed category
-    const index = Array.from(categoriesContainer.children).indexOf(category);
-
-    // Store the removed category and its original index
-    removedCategories.push({ category: category, index: index });
-
-    // Remove the category
-    category.remove();
-  }
-});
-
-document.addEventListener('keydown', function (event) {
-  // Shift + Alt + 'T' was pressed
-  if (event.shiftKey && event.altKey && event.key.toLowerCase() === 't') {
-    const textarea = document.activeElement;
-    if (textarea.tagName !== 'TEXTAREA') return; // Ignore if the focused element is not a textarea
-
-    const category = textarea.closest('.category');
-    if (!category) return; // Ignore if the textarea is not inside a category
-
-    const categoryName = category.querySelector('.category-header').textContent;
-
-    // Fetch current template
-    let currentTemplate = templateTextArea.value;
-    
-    // Remove leading comma and space if present
-    currentTemplate = currentTemplate.replace(/^,\s*/, '');
-
-    // Append the category name to the template
-    currentTemplate += (currentTemplate === '' ? '' : ', ') + `[${categoryName}]`;
-
-    // Set the updated template back to the textarea
-    templateTextArea.value = currentTemplate;
-
-    // Automatically resize the textarea
-    const textareaLineHeight = parseInt(getComputedStyle(templateTextArea).lineHeight);
-    const minHeight = textareaLineHeight * 1; // Set a minimum height for the textarea (e.g., 1 line)
-    const newHeight = Math.max(minHeight, templateTextArea.scrollHeight);
-    templateTextArea.style.height = newHeight + "px";
-
-    // Add the fade-in-animation-container class to the category
-    category.classList.add('fade-in-animation-container');
-    setTimeout(() => {
-      category.classList.remove('fade-in-animation-container');
-    }, 500);
-  }
-});
-
-document.addEventListener('keydown', function (event) {
-  // Shift + Alt + 'B' was pressed
-  if (event.shiftKey && event.altKey && event.key.toLowerCase() === 'b') {
-    const textarea = document.activeElement;
-    if (textarea.tagName !== 'TEXTAREA') return; // Ignore if the focused element is not a textarea
-
-    const category = textarea.closest('.category');
-    if (!category) return; // Ignore if the textarea is not inside a category
-
-    // Duplicate the active category
-    duplicateCategory(category);
-
-    // Add the fade-in-animation class to the new category container
-  categoryComponent.classList.add('fade-in-animation-btn');
-  }
-});
-
-function duplicateCategory(activeCategory) {
-  // Extract the original category name
-  let originalCategoryName = activeCategory.querySelector('.category-header').textContent;
-
-  let duplicateCategoryName = originalCategoryName;
-  let duplicateCount = 2;
-
-  // Create a list of all existing category names
-  let existingCategoryNames = Array.from(document.querySelectorAll('.category-header')).map(header => header.textContent);
-
-  // Continue incrementing the duplicate count until we find a name that doesn't exist
-  while (existingCategoryNames.includes(duplicateCategoryName + duplicateCount)) {
-    duplicateCount++;
-  }
-
-  duplicateCategoryName = originalCategoryName + duplicateCount;
-
-  // Create a new category with the duplicated name
-  const categoryComponent = createCategoryComponent(duplicateCategoryName);
-
-  // Add the fade-in-animation class to the new category container
-  categoryComponent.classList.add('fade-in-animation-btn');
-
-  // Copy the contents of the original category to the duplicated category
-  let originalTextArea = activeCategory.querySelector('textarea');
-  let duplicateTextArea = categoryComponent.querySelector('textarea');
-  duplicateTextArea.value = originalTextArea.value;
-
-  // Copy the state of the 'include' and 'lock' checkboxes
-  let originalIncludeCheckbox = activeCategory.querySelector('.include-category');
-  let duplicateIncludeCheckbox = categoryComponent.querySelector('.include-category');
-  duplicateIncludeCheckbox.checked = originalIncludeCheckbox.checked;
-
-  let originalLockCheckbox = activeCategory.querySelector('.lock-category');
-  let duplicateLockCheckbox = categoryComponent.querySelector('.lock-category');
-  duplicateLockCheckbox.checked = originalLockCheckbox.checked;
-
-  // Trigger the onchange event for the lock checkbox
-  duplicateLockCheckbox.dispatchEvent(new Event('change'));
-  duplicateIncludeCheckbox.dispatchEvent(new Event('input'));
-
-  // Find the index of the active category
-  let activeCategoryIndex = Array.from(categoriesContainer.children).indexOf(activeCategory);
-
-  // Find the position of the last duplicate of the active category
-  let insertIndex = activeCategoryIndex + 1;
-  while (insertIndex < categoriesContainer.children.length &&
-    categoriesContainer.children[insertIndex].querySelector('.category-header').textContent.startsWith(originalCategoryName)) {
-    insertIndex++;
-  }
-
-  // Insert the new category at the correct position
-  if (insertIndex < categoriesContainer.children.length) {
-    categoriesContainer.insertBefore(categoryComponent, categoriesContainer.children[insertIndex]);
-  } else {
-    categoriesContainer.appendChild(categoryComponent);
-  }
-}
-
-function restoreDefaultLayoutWithTemplate() {
-  restoreDefaultLayout();
-  const promptTemplate = document.getElementById('promptTemplate');
-  promptTemplate.value = "";
-}
-
-window.addEventListener('keydown', function (event) {
-  // Check if Shift+Alt+0 was pressed
-  if (event.shiftKey && event.altKey && event.code === 'Digit0') {
-    restoreDefaultLayoutWithTemplate();
-  }
-});
-
-// Function to undo remove
-function undoRemove() {
-  if (removedCategories.length > 0) {
-    const lastRemoved = removedCategories.pop();
-
-    // If the removed category was the last in the list, we can append it
-    if (lastRemoved.index === categoriesContainer.children.length) {
-      categoriesContainer.appendChild(lastRemoved.category);
-    } else {
-      // Otherwise, we insert it at the original position
-      categoriesContainer.insertBefore(lastRemoved.category, categoriesContainer.children[lastRemoved.index]);
-    }
-  }
-}
-
-function undoRemoveAll() {
-  const categoriesContainer = document.getElementById('categories');
-
-  // Restore all removed categories to their original positions
-  // Sort the removedCategories array in reverse order of originalIndex before reinserting,
-  // to ensure elements are inserted in the correct position
-  removedCategories.sort((a, b) => b.originalIndex - a.originalIndex);
-  while (removedCategories.length > 0) {
-    const { element, originalIndex } = removedCategories.pop();
-    if (originalIndex < categoriesContainer.children.length) {
-      categoriesContainer.insertBefore(element, categoriesContainer.children[originalIndex]);
-    } else {
-      categoriesContainer.appendChild(element);
-    }
-  }
-}
-
-// Get the spellcheck toggle button element
-const spellcheckToggleBtn = document.getElementById('spellcheckToggleBtn');
-
-// Add event listener to toggle spellcheck on button click
-spellcheckToggleBtn.addEventListener('click', toggleSpellcheck);
-
 function toggleSpellcheck() {
   const textareas = document.querySelectorAll('textarea');
   
@@ -1341,18 +1314,49 @@ function toggleSpellcheck() {
   });
 }
 
-// Add event listener for keydown on the whole document
-document.addEventListener('keydown', (event) => {
-  if (event.shiftKey && event.altKey && event.code === 'Digit7') {
-    toggleSpellcheck();
-  }
-});
+// ============================================================================
+// EVENT WIRING / BOOTSTRAP
+// ============================================================================
 
-const undoRemoveButton = document.getElementById('undoRemoveButton');
+// Button event listeners
+document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
+document.getElementById('generateBtn').addEventListener('click', generatePrompts);
+document.getElementById('clearHistoryBtn').addEventListener('click', clearHistory);
+document.getElementById('clearAllBtn').addEventListener('click', clearAll);
+document.getElementById('saveCustomPromptsBtn').addEventListener('click', saveCustomPrompts);
+document.getElementById('loadCustomPromptsBtn').addEventListener('click', loadCustomPrompts);
+document.getElementById('saveAllBtn').addEventListener('click', saveAll);
+document.getElementById('removeAllBtn').addEventListener('click', removeAllCategories);
+document.getElementById('add-all-template-btn').addEventListener('click', addAllToTemplate);
+document.getElementById("restoreDefaultLayoutBtn").addEventListener('click', restoreDefaultLayout);
+document.getElementById('advancedButton').addEventListener('click', restoreAdvancedLayout);
+
+addPromptsButton.addEventListener('click', addCustomPrompts);
+randomizeBtn.addEventListener("click", () => populateFieldsRandomly());
+lockAllBtn.addEventListener('click', toggleLockAll);
+IncludeAllBtn.addEventListener('click', toggleIncludeAll);
+spellcheckToggleBtn.addEventListener('click', toggleSpellcheck);
 undoRemoveButton.addEventListener('click', undoRemove);
-
-const undoRemoveAllButton = document.getElementById('undoRemoveAllButton');
 undoRemoveAllButton.addEventListener('click', undoRemoveAll);
-
-const undoClearAllButton = document.getElementById('undoClearAllButton');
 undoClearAllButton.addEventListener('click', undoClearAll);
+
+// ============================================================================
+// LIFECYCLE HOOKS
+// ============================================================================
+
+document.addEventListener('DOMContentLoaded', (event) => {
+  const numPromptsInput = document.getElementById('numPrompts');
+  const numWordsInput = document.getElementById('numWords');
+
+  numPromptsInput.addEventListener('input', () => {
+    if (numPromptsInput.value > 1000) {
+      numPromptsInput.value = 1000;
+    }
+  });
+
+  numWordsInput.addEventListener('input', () => {
+    if (numWordsInput.value > 20000) {
+      numWordsInput.value = 20000;
+    }
+  });
+});
