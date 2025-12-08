@@ -207,13 +207,38 @@ function createTemplateCard(text = '', isActive = true, isLocked = false) {
       return;
     }
     
-    // Get random template from PROMPT TEMPLATES category if available (placeholder logic)
-    // You would normally check your data object here
-    // For now, let's just alert if no data
-    if (typeof data !== 'undefined' && data['PROMPT TEMPLATES']) {
-       // logic would go here
+    // Get random template from PROMPT TEMPLATES category if available
+    if (typeof data !== 'undefined' && data['PROMPT TEMPLATES'] && Array.isArray(data['PROMPT TEMPLATES']) && data['PROMPT TEMPLATES'].length > 0) {
+      // Get a random template from the array
+      const templates = data['PROMPT TEMPLATES'];
+      const randomIndex = Math.floor(Math.random() * templates.length);
+      const randomTemplate = templates[randomIndex];
+      
+      // Initialize undo stack if it doesn't exist
+      if (!textUndoStack[textarea.id]) textUndoStack[textarea.id] = [];
+      if (!textRedoStack[textarea.id]) textRedoStack[textarea.id] = [];
+      
+      // Push current state to undo stack before changing
+      textUndoStack[textarea.id].push(textarea.value);
+      
+      // Clear redo stack
+      textRedoStack[textarea.id].length = 0;
+      
+      // Set the textarea value to the random template
+      textarea.value = randomTemplate;
+      
+      // Auto-resize if the function exists
+      if (typeof autoResizeTemplateTextarea === 'function') {
+        autoResizeTemplateTextarea(textarea);
+      }
+      
+      // Push new state to undo stack after modification
+      textUndoStack[textarea.id].push(textarea.value);
+      
+      // Focus the textarea
+      textarea.focus();
     } else {
-        // Silent fail or alert
+      alert('No templates available in PROMPT TEMPLATES category.');
     }
   });
   controls.appendChild(randomTemplateButton);
