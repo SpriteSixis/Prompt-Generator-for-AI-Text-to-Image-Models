@@ -17,7 +17,7 @@ or download the code and open `index.html` in your browser to start creating pro
 
 ## How It Works
 
-The generator takes a set number of random words from each category, shuffles them, and produces the desired number of unique prompts. You can copy the generated prompt to your clipboard and paste it into any application of your choice..
+The generator takes a set number of random words from each category, shuffles them, and produces the desired number of unique prompts. You can copy the generated prompt to your clipboard and paste it into any application of your choice.
 
 ## Detailed Features
 
