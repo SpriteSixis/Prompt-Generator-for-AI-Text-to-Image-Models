@@ -44,6 +44,27 @@
             <button id="connectLLMBtn" class="btn button btn-info" title="Connect your OpenAI API Key">Connect LLM</button>
             <textarea id="aiInput" class="soft-ui-input" placeholder="Ask LLM to build a prompt setup...&#10;e.g., Create a Dark Fantasy prompt setup"></textarea>
             <button id="sendAIQueryBtn" class="btn button btn-primary" title="Send your request to the LLM">Send Prompt</button>
+            <button id="showComfyUIBtn" class="btn button btn-info" style="margin-top: 0.5rem;" title="Show ComfyUI Bridge">ComfyUI Bridge</button>
+          </div>
+          <div id="comfyui-bridge-container" style="display: none; margin-top: 1rem; padding: 1rem; border: 1px solid #63f7de; border-radius: 7px; background-color: rgba(40, 70, 98, 0.5);">
+            <h3 class="ai-assistant-title" style="margin-top: 0;">ComfyUI Bridge</h3>
+            <label for="comfyuiUrl" class="bold-label">ComfyUI URL:</label>
+            <input type="text" id="comfyuiUrl" class="soft-ui-input" placeholder="http://127.0.0.1:8188" value="http://127.0.0.1:8188" style="margin-bottom: 0.5rem;" />
+            
+            <label for="workflowLoader" class="bold-label">Workflow Loader (API Format JSON):</label>
+            <input type="file" id="workflowLoader" accept=".json" class="soft-ui-input" style="margin-bottom: 0.5rem;" />
+            
+            <label for="targetNodeSelect" class="bold-label">Target Node:</label>
+            <select id="targetNodeSelect" class="soft-ui-input" style="margin-bottom: 0.5rem;">
+              <option value="">Load a workflow first...</option>
+            </select>
+            
+            <label style="display: flex; align-items: center; margin-top: 0.5rem;">
+              <input type="checkbox" id="randomizeSeedCheckbox" style="margin-right: 0.5rem;" />
+              <span class="bold-label" style="margin: 0;">Randomize Seed in ComfyUI</span>
+            </label>
+            
+            <button id="toggleComfyUIBtn" class="btn button btn-secondary" style="margin-top: 0.5rem;" title="Hide ComfyUI Bridge">Hide Bridge</button>
           </div>
           <button id="addCategoryBtn" class="btn button btn-primary ml-2"
             title="Create Category Container. Shift + Alt + N">New

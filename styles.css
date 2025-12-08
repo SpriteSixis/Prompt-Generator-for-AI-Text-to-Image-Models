@@ -940,6 +940,27 @@ textarea::placeholder {
   mix-blend-mode: screen;
 }
 
+/* ComfyUI Send Button */
+.comfyui-send-btn {
+  background-color: #7c3aed !important;
+  color: white;
+}
+
+.comfyui-send-btn:hover {
+  background-color: #9d5ff0 !important;
+  color: white;
+}
+
+.comfyui-send-btn::before {
+  background-color: rgba(124, 58, 237, 0.644);
+  mix-blend-mode: screen;
+}
+
+.comfyui-send-btn:hover::before {
+  background-color: rgba(157, 95, 240, 0.644);
+  mix-blend-mode: screen;
+}
+
 #promptHistory {
   border-radius: 7px;
   border: 1px solid #299996;

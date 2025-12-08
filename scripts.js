@@ -729,6 +729,478 @@ function initializeAIAssistant() {
 }
 
 // ============================================================================
+// COMFYUI BRIDGE
+// ============================================================================
+
+let comfyUIWorkflow = null; // Store the loaded workflow JSON
+let comfyUITextNodes = []; // Store parsed text nodes for easy lookup
+
+function initializeComfyUIBridge() {
+  const comfyUIBridgeContainer = document.getElementById('comfyui-bridge-container');
+  const showComfyUIBtn = document.getElementById('showComfyUIBtn');
+  const toggleComfyUIBtn = document.getElementById('toggleComfyUIBtn');
+  const workflowLoader = document.getElementById('workflowLoader');
+  const comfyUIUrlInput = document.getElementById('comfyuiUrl');
+  const targetNodeSelect = document.getElementById('targetNodeSelect');
+
+  // Load saved settings from localStorage
+  loadComfyUISettings();
+
+  // Toggle bridge visibility
+  if (showComfyUIBtn) {
+    showComfyUIBtn.addEventListener('click', () => {
+      if (comfyUIBridgeContainer) comfyUIBridgeContainer.style.display = 'block';
+      if (showComfyUIBtn) showComfyUIBtn.style.display = 'none';
+    });
+  }
+
+  if (toggleComfyUIBtn) {
+    toggleComfyUIBtn.addEventListener('click', () => {
+      if (comfyUIBridgeContainer) comfyUIBridgeContainer.style.display = 'none';
+      if (showComfyUIBtn) showComfyUIBtn.style.display = 'block';
+    });
+  }
+
+  // Handle workflow file loading
+  if (workflowLoader) {
+    workflowLoader.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const workflow = JSON.parse(e.target.result);
+          parseWorkflow(workflow);
+          // Save workflow to localStorage
+          localStorage.setItem('comfyui_workflow', JSON.stringify(workflow));
+        } catch (error) {
+          alert('Failed to parse workflow JSON: ' + error.message);
+          console.error('Workflow parse error:', error);
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  // Save URL changes to localStorage
+  if (comfyUIUrlInput) {
+    comfyUIUrlInput.addEventListener('change', () => {
+      localStorage.setItem('comfyui_url', comfyUIUrlInput.value);
+    });
+  }
+
+  // Save node selection to localStorage
+  if (targetNodeSelect) {
+    targetNodeSelect.addEventListener('change', () => {
+      localStorage.setItem('comfyui_target_node', targetNodeSelect.value);
+    });
+  }
+}
+
+function loadComfyUISettings() {
+  const comfyUIUrlInput = document.getElementById('comfyuiUrl');
+  const targetNodeSelect = document.getElementById('targetNodeSelect');
+  const randomizeSeedCheckbox = document.getElementById('randomizeSeedCheckbox');
+
+  // Load URL
+  const savedUrl = localStorage.getItem('comfyui_url');
+  if (comfyUIUrlInput && savedUrl) {
+    comfyUIUrlInput.value = savedUrl;
+  }
+
+  // Load workflow
+  const savedWorkflow = localStorage.getItem('comfyui_workflow');
+  if (savedWorkflow) {
+    try {
+      const workflow = JSON.parse(savedWorkflow);
+      parseWorkflow(workflow);
+      comfyUIWorkflow = workflow;
+    } catch (error) {
+      console.error('Failed to load saved workflow:', error);
+    }
+  }
+
+  // Load target node
+  const savedNode = localStorage.getItem('comfyui_target_node');
+  if (targetNodeSelect && savedNode) {
+    targetNodeSelect.value = savedNode;
+  }
+
+  // Load randomize seed preference
+  const savedRandomizeSeed = localStorage.getItem('comfyui_randomize_seed');
+  if (randomizeSeedCheckbox) {
+    randomizeSeedCheckbox.checked = savedRandomizeSeed === 'true';
+    randomizeSeedCheckbox.addEventListener('change', () => {
+      localStorage.setItem('comfyui_randomize_seed', randomizeSeedCheckbox.checked.toString());
+    });
+  }
+}
+
+function parseWorkflow(workflow) {
+  const targetNodeSelect = document.getElementById('targetNodeSelect');
+  if (!targetNodeSelect) return;
+
+  // Clear existing options
+  targetNodeSelect.innerHTML = '<option value="">Select a node...</option>';
+
+  const textNodes = [];
+  let nodes = [];
+
+  // Handle two possible workflow formats:
+  // 1. API format: { "node_id": { "class_type": "...", "inputs": {...} }, ... }
+  // 2. UI format: { "nodes": [ { "id": ..., "type": "...", "widgets_values": [...] }, ... ] }
+  
+  if (workflow.nodes && Array.isArray(workflow.nodes)) {
+    // UI format - nodes array
+    nodes = workflow.nodes;
+  } else {
+    // API format - flat object
+    // Convert to array format for easier processing
+    nodes = Object.entries(workflow)
+      .filter(([key]) => key !== 'id' && key !== 'revision' && key !== 'last_node_id' && key !== 'last_link_id')
+      .map(([nodeId, nodeData]) => ({
+        id: nodeId,
+        ...nodeData
+      }));
+  }
+
+  for (const node of nodes) {
+    if (typeof node !== 'object' || !node) continue;
+
+    const nodeId = node.id;
+    const nodeType = node.type || node.class_type || '';
+    const widgetsValues = node.widgets_values || [];
+    const inputs = node.inputs || {};
+
+    // Check if this node has text input capabilities
+    const hasTextInput = 
+      nodeType.includes('TextEncode') || 
+      nodeType.includes('CLIPTextEncode') ||
+      nodeType.includes('String') ||
+      (widgetsValues.length > 0 && typeof widgetsValues[0] === 'string') ||
+      inputs.hasOwnProperty('text') ||
+      inputs.hasOwnProperty('text_positive') ||
+      inputs.hasOwnProperty('string') ||
+      inputs.hasOwnProperty('prompt');
+
+    if (hasTextInput) {
+      // Get a preview of current text if available
+      let textPreview = '';
+      if (widgetsValues.length > 0 && typeof widgetsValues[0] === 'string') {
+        textPreview = widgetsValues[0].substring(0, 50).trim();
+      } else if (inputs.text) {
+        textPreview = String(inputs.text).substring(0, 50);
+      } else if (inputs.text_positive) {
+        textPreview = String(inputs.text_positive).substring(0, 50);
+      } else if (inputs.string) {
+        textPreview = String(inputs.string).substring(0, 50);
+      } else if (inputs.prompt) {
+        textPreview = String(inputs.prompt).substring(0, 50);
+      }
+
+      const displayText = `${nodeId}: ${nodeType}${textPreview ? ` (${textPreview}...)` : ''}`;
+      textNodes.push({ 
+        id: nodeId, 
+        display: displayText, 
+        type: nodeType, 
+        widgetsValues: widgetsValues,
+        inputs: inputs,
+        node: node // Store full node for later use
+      });
+    }
+  }
+
+  // Populate dropdown
+  textNodes.forEach(node => {
+    const option = document.createElement('option');
+    option.value = node.id;
+    option.textContent = node.display;
+    targetNodeSelect.appendChild(option);
+  });
+
+  // Store the workflow and text nodes mapping
+  comfyUIWorkflow = workflow;
+  comfyUITextNodes = textNodes; // Store for easy lookup
+
+  if (textNodes.length === 0) {
+    targetNodeSelect.innerHTML = '<option value="">No text input nodes found</option>';
+  } else {
+    console.log(`Found ${textNodes.length} text input nodes`);
+  }
+}
+
+function buildLinkMap(workflow) {
+  const linkMap = {};
+  const links = workflow && Array.isArray(workflow.links) ? workflow.links : [];
+  // LiteGraph links look like: [origin_id, origin_slot, target_id, target_slot, link_id, type]
+  for (const link of links) {
+    if (!Array.isArray(link)) continue;
+    const [fromNode, fromSlot, , , linkId] = link;
+    if (linkId !== undefined && fromNode !== null && fromNode !== undefined) {
+      linkMap[linkId] = [fromNode, fromSlot || 0];
+    }
+  }
+  return linkMap;
+}
+
+async function sendPromptToComfyUI(promptText) {
+  const comfyUIUrlInput = document.getElementById('comfyuiUrl');
+  const targetNodeSelect = document.getElementById('targetNodeSelect');
+  const randomizeSeedCheckbox = document.getElementById('randomizeSeedCheckbox');
+
+  if (!comfyUIUrlInput || !targetNodeSelect) {
+    alert('ComfyUI Bridge not properly initialized.');
+    return;
+  }
+
+  const comfyUIUrl = comfyUIUrlInput.value.trim();
+  if (!comfyUIUrl) {
+    alert('Please enter a ComfyUI URL.');
+    return;
+  }
+
+  if (!comfyUIWorkflow) {
+    alert('Please load a workflow first.');
+    return;
+  }
+
+  const targetNodeId = targetNodeSelect.value;
+  if (!targetNodeId) {
+    alert('Please select a target node.');
+    return;
+  }
+
+  // Create a deep copy of the workflow
+  const modifiedWorkflow = JSON.parse(JSON.stringify(comfyUIWorkflow));
+
+  // Find the target node
+  let targetNode = null;
+  let isUIFormat = false;
+
+  // Check if it's UI format (nodes array) or API format (flat object)
+  if (modifiedWorkflow.nodes && Array.isArray(modifiedWorkflow.nodes)) {
+    // UI format
+    isUIFormat = true;
+    targetNode = modifiedWorkflow.nodes.find(n => String(n.id) === String(targetNodeId));
+    
+    if (targetNode) {
+      // Update widgets_values[0] for UI format
+      if (!targetNode.widgets_values) {
+        targetNode.widgets_values = [];
+      }
+      if (targetNode.widgets_values.length === 0) {
+        targetNode.widgets_values.push(promptText);
+      } else {
+        targetNode.widgets_values[0] = promptText;
+      }
+    }
+  } else {
+    // API format - flat object
+    targetNode = modifiedWorkflow[targetNodeId];
+    
+    if (targetNode) {
+      const inputs = targetNode.inputs || {};
+      
+      // Try different possible input field names
+      if (inputs.hasOwnProperty('text')) {
+        inputs.text = promptText;
+      } else if (inputs.hasOwnProperty('text_positive')) {
+        inputs.text_positive = promptText;
+      } else if (inputs.hasOwnProperty('string')) {
+        inputs.string = promptText;
+      } else if (inputs.hasOwnProperty('prompt')) {
+        inputs.prompt = promptText;
+      } else {
+        // Default to 'text' if none found
+        inputs.text = promptText;
+      }
+    }
+  }
+
+  if (!targetNode) {
+    alert('Selected node not found in workflow.');
+    return;
+  }
+
+  // Randomize seeds if checkbox is checked
+  if (randomizeSeedCheckbox && randomizeSeedCheckbox.checked) {
+    if (isUIFormat && modifiedWorkflow.nodes) {
+      // UI format - iterate through nodes array
+      for (const node of modifiedWorkflow.nodes) {
+        if (typeof node !== 'object' || !node) continue;
+        const inputs = node.inputs || {};
+        const widgetsValues = node.widgets_values || [];
+        
+        // Check inputs for seed
+        if (inputs.hasOwnProperty('seed')) {
+          inputs.seed = Math.floor(Math.random() * 4294967295);
+        }
+        
+        // Check widgets_values for seed (some nodes store seed in widgets_values)
+        // Look for seed in widgets_values - typically after text inputs
+        for (let i = 0; i < widgetsValues.length; i++) {
+          if (typeof widgetsValues[i] === 'number' && widgetsValues[i] > 1000 && widgetsValues[i] < 4294967295) {
+            // Likely a seed value, randomize it
+            widgetsValues[i] = Math.floor(Math.random() * 4294967295);
+          }
+        }
+      }
+    } else {
+      // API format - iterate through object entries
+      for (const [nodeId, nodeData] of Object.entries(modifiedWorkflow)) {
+        if (typeof nodeData !== 'object' || !nodeData) continue;
+        if (nodeId === 'id' || nodeId === 'revision' || nodeId === 'last_node_id' || nodeId === 'last_link_id') continue;
+        const inputs = nodeData.inputs || {};
+        if (inputs.hasOwnProperty('seed')) {
+          inputs.seed = Math.floor(Math.random() * 4294967295);
+        }
+      }
+    }
+  }
+
+  // Convert UI format to API format if needed and drop UI-only nodes
+  const nonExecutableTypes = [
+    'note',
+    'reroute',
+    'primitivenode',
+    'showtext',
+    'showimage',
+    'group',
+    'fast groups bypasser',
+    'fast groups',
+    'fastgroup',
+    'fastgroupbypasser',
+    'fast groups bypasser (rgthree)'
+  ];
+
+  const isNonExecutable = (type = '') => {
+    const t = String(type).toLowerCase();
+    return nonExecutableTypes.some(ne => t.includes(ne));
+  };
+
+  const linkMap = buildLinkMap(modifiedWorkflow);
+  let apiWorkflow = modifiedWorkflow;
+
+  if (isUIFormat) {
+    apiWorkflow = {};
+    if (modifiedWorkflow.nodes) {
+      for (const node of modifiedWorkflow.nodes) {
+        // Skip UI-only / non-executable nodes
+        if (isNonExecutable(node.type)) continue;
+        if (!node.type || node.type.trim() === '') continue;
+
+        // Skip nodes with no useful content
+        const hasOutputs = node.outputs && Array.isArray(node.outputs) && node.outputs.length > 0;
+        const hasInputs = node.inputs && Array.isArray(node.inputs) && node.inputs.length > 0;
+        const hasWidgets = node.widgets_values && node.widgets_values.length > 0;
+        if (!hasOutputs && !hasInputs && !hasWidgets) continue;
+
+        const nodeId = String(node.id);
+        apiWorkflow[nodeId] = {
+          class_type: node.type,
+          inputs: {},
+        };
+
+        // Map inputs (links) using the link map (convert link IDs to [fromNode, fromSlot])
+        if (node.inputs && Array.isArray(node.inputs)) {
+          for (const input of node.inputs) {
+            if (input.name && input.link !== null && input.link !== undefined) {
+              const linkTarget = linkMap[input.link];
+              if (linkTarget) {
+                apiWorkflow[nodeId].inputs[input.name] = linkTarget;
+              }
+            }
+          }
+        } else if (node.inputs && typeof node.inputs === 'object' && !Array.isArray(node.inputs)) {
+          apiWorkflow[nodeId].inputs = { ...node.inputs };
+        }
+
+        // Map widgets to inputs where sensible
+        if (node.widgets_values && node.widgets_values.length > 0) {
+          if (node.type && node.type.includes('TextEncode')) {
+            apiWorkflow[nodeId].inputs.text = node.widgets_values[0] || '';
+          } else if (node.type && (node.type.includes('KSampler') || node.type.includes('Sampler'))) {
+            if (node.widgets_values.length > 0) apiWorkflow[nodeId].inputs.seed = node.widgets_values[0];
+            if (node.widgets_values.length > 1) apiWorkflow[nodeId].inputs.steps = node.widgets_values[1];
+            if (node.widgets_values.length > 2) apiWorkflow[nodeId].inputs.cfg = node.widgets_values[2];
+            if (node.widgets_values.length > 3) apiWorkflow[nodeId].inputs.sampler_name = node.widgets_values[3];
+            if (node.widgets_values.length > 4) apiWorkflow[nodeId].inputs.scheduler = node.widgets_values[4];
+            if (node.widgets_values.length > 5) apiWorkflow[nodeId].inputs.denoise = node.widgets_values[5];
+          } else if (Object.keys(apiWorkflow[nodeId].inputs).length === 0 && node.widgets_values[0] !== undefined) {
+            if (typeof node.widgets_values[0] === 'string') {
+              apiWorkflow[nodeId].inputs.text = node.widgets_values[0];
+            } else if (typeof node.widgets_values[0] === 'number') {
+              apiWorkflow[nodeId].inputs.value = node.widgets_values[0];
+            }
+          }
+        }
+      }
+    }
+  } else {
+    // API format already; drop non-executable nodes if present
+    apiWorkflow = {};
+    for (const [nodeId, nodeData] of Object.entries(modifiedWorkflow)) {
+      if (['id', 'revision', 'last_node_id', 'last_link_id'].includes(nodeId)) continue;
+      const classType = nodeData.class_type || nodeData.type || '';
+      if (isNonExecutable(classType)) continue;
+      apiWorkflow[nodeId] = nodeData;
+    }
+  }
+
+  // Send to ComfyUI
+  try {
+    // Ensure URL doesn't have trailing slash
+    const cleanUrl = comfyUIUrl.replace(/\/$/, '');
+    const apiUrl = `${cleanUrl}/prompt`;
+    
+    console.log('Sending to ComfyUI:', apiUrl);
+    console.log('Workflow preview:', JSON.stringify(apiWorkflow).substring(0, 200) + '...');
+    
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ prompt: apiWorkflow }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('ComfyUI HTTP error:', response.status, errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 100)}`);
+    }
+
+    const result = await response.json();
+    console.log('ComfyUI response:', result);
+    alert('Prompt sent to ComfyUI successfully!');
+  } catch (error) {
+    console.error('ComfyUI send error details:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      url: comfyUIUrl
+    });
+    
+    let errorMessage = 'Connection Failed. ';
+    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+      errorMessage += 'Could not connect to ComfyUI. ';
+      errorMessage += 'Check:\n';
+      errorMessage += '1. ComfyUI is running\n';
+      errorMessage += '2. URL is correct (http://127.0.0.1:8188)\n';
+      errorMessage += '3. ComfyUI started with: --enable-cors-header *\n';
+      errorMessage += '4. No firewall blocking the connection';
+    } else if (error.message.includes('HTTP')) {
+      errorMessage += `Server error: ${error.message}`;
+    } else {
+      errorMessage += error.message || 'Unknown error occurred';
+    }
+    
+    alert(errorMessage);
+  }
+}
+
+// ============================================================================
 // CATEGORY UI CORE
 // ============================================================================
 
@@ -1346,6 +1818,7 @@ categoryNames.forEach(categoryName => {
 setTimeout(() => updateAllMoveButtons(), 0);
 ensureTemplateCardExists();
 initializeAIAssistant();
+initializeComfyUIBridge();
 
 // ============================================================================
 // KEYBOARD SHORTCUTS - Consolidated hotkey handler
@@ -1594,11 +2067,24 @@ function generatePrompts() {
       navigator.clipboard.writeText(prompt);
     };    
 
+    // Create the "Send to ComfyUI" button
+    const sendToComfyUIButton = document.createElement('button');
+    sendToComfyUIButton.textContent = 'Send';
+    sendToComfyUIButton.classList.add('button', 'copy-btn', 'comfyui-send-btn');
+    sendToComfyUIButton.style.marginLeft = '0.5rem';
+    sendToComfyUIButton.title = 'Send Prompt to ComfyUI';
+    sendToComfyUIButton.onclick = () => {
+      sendPromptToComfyUI(prompt);
+    };
+
     // Add the textBox to the container
     textBoxContainer.appendChild(textBox);
     
     // Add the copyButton to the container
     textBoxContainer.appendChild(copyButton);
+    
+    // Add the sendToComfyUIButton to the container
+    textBoxContainer.appendChild(sendToComfyUIButton);
 
     // Add the container to the promptElement
     promptElement.appendChild(textBoxContainer);
