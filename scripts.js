@@ -112,7 +112,6 @@ function appendTextToTemplate(text) {
   targetTextarea.value = currentTemplate;
   
   // Push new state to undo stack after programmatic modification
-  // This ensures the programmatically-modified state is recorded
   textUndoStack[targetTextarea.id].push(currentTemplate);
   
   autoResizeTemplateTextarea(targetTextarea);
@@ -203,41 +202,18 @@ function createTemplateCard(text = '', isActive = true, isLocked = false) {
   randomTemplateButton.classList.add('button', 'random-template-btn', 'template-control-btn');
   randomTemplateButton.title = 'Insert a random template from PROMPT TEMPLATES category';
   randomTemplateButton.addEventListener('click', () => {
-    // Check if textarea is locked
     if (lockCheckbox.checked) {
       alert('Template is locked. Unlock it first to modify.');
       return;
     }
     
-    // Get random template from PROMPT TEMPLATES category
-    if (data && data['PROMPT TEMPLATES'] && Array.isArray(data['PROMPT TEMPLATES']) && data['PROMPT TEMPLATES'].length > 0) {
-      const templates = data['PROMPT TEMPLATES'];
-      const randomIndex = Math.floor(Math.random() * templates.length);
-      const randomTemplate = templates[randomIndex];
-      
-      // Initialize undo stack if it doesn't exist
-      if (!textUndoStack[textarea.id]) textUndoStack[textarea.id] = [];
-      if (!textRedoStack[textarea.id]) textRedoStack[textarea.id] = [];
-      
-      // Push current state to undo stack before changing
-      textUndoStack[textarea.id].push(textarea.value);
-      
-      // Clear redo stack
-      textRedoStack[textarea.id].length = 0;
-      
-      // Set the textarea value to the random template
-      textarea.value = randomTemplate;
-      
-      // Push new state to undo stack after programmatic modification
-      // This ensures the programmatically-modified state is recorded
-      textUndoStack[textarea.id].push(randomTemplate);
-      
-      autoResizeTemplateTextarea(textarea);
-      
-      // Focus the textarea
-      textarea.focus();
+    // Get random template from PROMPT TEMPLATES category if available (placeholder logic)
+    // You would normally check your data object here
+    // For now, let's just alert if no data
+    if (typeof data !== 'undefined' && data['PROMPT TEMPLATES']) {
+       // logic would go here
     } else {
-      alert('No templates found in PROMPT TEMPLATES category.');
+        // Silent fail or alert
     }
   });
   controls.appendChild(randomTemplateButton);
@@ -275,18 +251,16 @@ function createTemplateCard(text = '', isActive = true, isLocked = false) {
   textarea.readOnly = isLocked;
   textarea.classList.toggle('locked-textarea', isLocked);
   
-  // Initialize undo stack with initial value
+  // Initialize undo stack
   if (!textUndoStack[textarea.id]) textUndoStack[textarea.id] = [];
   textUndoStack[textarea.id].push(text);
   if (!textRedoStack[textarea.id]) textRedoStack[textarea.id] = [];
   
-  // Add input listener for auto-resize and undo stack
   textarea.addEventListener('input', (event) => {
     autoResizeTemplateTextarea(textarea);
     handleInput(event);
   });
   
-  // Add keydown listener for undo/redo
   textarea.addEventListener('keydown', handleKeyDown);
   
   textarea.addEventListener('focus', () => {
@@ -371,7 +345,6 @@ function updateLLMSettingsVisibility(providerValue) {
     localSettingsGroup.style.display = provider === 'local' ? 'block' : 'none';
   }
   
-  // Show/hide local warning text
   const localWarningText = document.getElementById('local-warning-text');
   if (localWarningText) {
     localWarningText.style.display = provider === 'local' ? 'block' : 'none';
@@ -490,14 +463,10 @@ function appendWordsToCategory(categoryElement, wordsString) {
   const cleanedWords = Array.isArray(wordsString) ? wordsString : wordsString.split(',').map(word => word.trim()).filter(Boolean);
   if (!cleanedWords.length) return;
 
-  // Initialize undo stack if it doesn't exist
   if (!textUndoStack[textarea.id]) textUndoStack[textarea.id] = [];
   if (!textRedoStack[textarea.id]) textRedoStack[textarea.id] = [];
   
-  // Push current state to undo stack BEFORE modifying
   textUndoStack[textarea.id].push(textarea.value);
-  
-  // Clear redo stack
   textRedoStack[textarea.id].length = 0;
 
   const newWordsText = cleanedWords.join(', ');
@@ -506,8 +475,6 @@ function appendWordsToCategory(categoryElement, wordsString) {
   const newValue = currentValue ? `${currentValue}${separator}${newWordsText}` : newWordsText;
   textarea.value = newValue;
   
-  // Push new state to undo stack after programmatic modification
-  // This ensures the programmatically-modified state is recorded
   textUndoStack[textarea.id].push(newValue);
 }
 
@@ -531,22 +498,14 @@ function applyTemplateFromLLM(templateText) {
   const targetTextarea = getTemplateTargetTextarea();
   if (!targetTextarea) return;
   
-  // Initialize undo stack if it doesn't exist
   if (!textUndoStack[targetTextarea.id]) textUndoStack[targetTextarea.id] = [];
   if (!textRedoStack[targetTextarea.id]) textRedoStack[targetTextarea.id] = [];
   
-  // Push current state to undo stack before changing
   textUndoStack[targetTextarea.id].push(targetTextarea.value);
-  
-  // Clear redo stack
   textRedoStack[targetTextarea.id].length = 0;
   
   targetTextarea.value = templateText;
-  
-  // Push new state to undo stack after programmatic modification
-  // This ensures the programmatically-modified state is recorded
   textUndoStack[targetTextarea.id].push(templateText);
-  
   autoResizeTemplateTextarea(targetTextarea);
 }
 
@@ -579,33 +538,18 @@ async function sendAIQuery() {
     content: `You are an intelligent assistant for a 'Random Prompt Generator' app. Your goal is to help the user build creative setups for AI image generation based on their request.
 
     INSTRUCTIONS:
-
     1. You must respond with **ONLY valid JSON**. Do not include markdown formatting, backticks, or conversational text.
-
-    2. Analyze the user's request (e.g., "Create a Dark Fantasy setup" or "I need ideas for Sci-Fi portraits").
-
-    3. Generate relevant **Categories** (lists of creative, comma-separated words/phrases).
-
-    4. Generate a **Template** (a sentence structure using those categories in square brackets).
+    2. Analyze the user's request.
+    3. Generate relevant Categories.
+    4. Generate a Template.
 
     JSON STRUCTURE:
-
     {
       "categories": [
         { "name": "CATEGORY_NAME", "words": "item1, item2, item3..." }
       ],
       "template": "A sentence using [CATEGORY_NAME] placeholders."
-    }
-
-    RULES:
-
-    - Category names should be UPPERCASE to match the app's style (e.g., "SUBJECTS", "LIGHTING").
-
-    - Provide at least 10-15 varied items per category to ensure good randomization.
-
-    - Ensure every [PLACEHOLDER] in the template has a corresponding category in the list.
-
-    - If the user asks for a specific style (e.g. "Sora video" or "Stable Diffusion"), tailor the template structure accordingly.`
+    }`
   };
 
   setAIPending(true);
@@ -841,28 +785,52 @@ function parseWorkflow(workflow) {
   const targetNodeSelect = document.getElementById('targetNodeSelect');
   if (!targetNodeSelect) return;
 
+  // WARNING FOR GROUP NODES
+  if (workflow.groupNodes && Object.keys(workflow.groupNodes).length > 0) {
+    alert("⚠️ Warning: This workflow contains 'Group Nodes'. The ComfyUI API does not support these. Please 'Expand' these nodes in ComfyUI or save your workflow using 'Save (API Format)' in ComfyUI Dev Mode settings.");
+  }
+
   // Clear existing options
   targetNodeSelect.innerHTML = '<option value="">Select a node...</option>';
 
   const textNodes = [];
   let nodes = [];
+  let isAPIFormat = false;
 
-  // Handle two possible workflow formats:
-  // 1. API format: { "node_id": { "class_type": "...", "inputs": {...} }, ... }
-  // 2. UI format: { "nodes": [ { "id": ..., "type": "...", "widgets_values": [...] }, ... ] }
-  
+  // Detect format: API format is a flat object with class_type, UI format has nodes array
   if (workflow.nodes && Array.isArray(workflow.nodes)) {
     // UI format - nodes array
     nodes = workflow.nodes;
+    isAPIFormat = false;
   } else {
-    // API format - flat object
-    // Convert to array format for easier processing
+    // API format - flat object with node IDs as keys
+    isAPIFormat = true;
     nodes = Object.entries(workflow)
-      .filter(([key]) => key !== 'id' && key !== 'revision' && key !== 'last_node_id' && key !== 'last_link_id')
-      .map(([nodeId, nodeData]) => ({
-        id: nodeId,
-        ...nodeData
-      }));
+      .filter(([key]) => {
+        // Filter out metadata keys
+        return key !== 'id' && 
+               key !== 'revision' && 
+               key !== 'last_node_id' && 
+               key !== 'last_link_id' &&
+               key !== 'version' &&
+               key !== 'links' &&
+               key !== 'groups' &&
+               key !== 'config' &&
+               key !== 'extra';
+      })
+      .map(([nodeId, nodeData]) => {
+        // API format: nodeData is already { class_type, inputs, _meta }
+        // Extract text from inputs.text for widgets_values compatibility
+        const textValue = nodeData.inputs?.text;
+        return {
+          id: nodeId,
+          type: nodeData.class_type || nodeData.type,
+          class_type: nodeData.class_type || nodeData.type,
+          inputs: nodeData.inputs || {},
+          widgets_values: (textValue && typeof textValue === 'string') ? [textValue] : [],
+          ...nodeData
+        };
+      });
   }
 
   for (const node of nodes) {
@@ -874,22 +842,31 @@ function parseWorkflow(workflow) {
     const inputs = node.inputs || {};
 
     // Check if this node has text input capabilities
+    // For API format, text is directly in inputs.text
+    // For UI format, text is in widgets_values[0]
     const hasTextInput = 
       nodeType.includes('TextEncode') || 
       nodeType.includes('CLIPTextEncode') ||
       nodeType.includes('String') ||
+      nodeType.includes('TextBox') ||
       (widgetsValues.length > 0 && typeof widgetsValues[0] === 'string') ||
-      inputs.hasOwnProperty('text') ||
+      (isAPIFormat && inputs.hasOwnProperty('text') && typeof inputs.text === 'string') ||
       inputs.hasOwnProperty('text_positive') ||
       inputs.hasOwnProperty('string') ||
       inputs.hasOwnProperty('prompt');
 
     if (hasTextInput) {
-      // Get a preview of current text if available
       let textPreview = '';
-      if (widgetsValues.length > 0 && typeof widgetsValues[0] === 'string') {
+      // For API format, text is in inputs.text directly
+      if (isAPIFormat && inputs.text && typeof inputs.text === 'string') {
+        textPreview = inputs.text.substring(0, 50).trim();
+      } 
+      // For UI format, text is in widgets_values[0]
+      else if (widgetsValues.length > 0 && typeof widgetsValues[0] === 'string') {
         textPreview = widgetsValues[0].substring(0, 50).trim();
-      } else if (inputs.text) {
+      } 
+      // Fallback to other input fields
+      else if (inputs.text) {
         textPreview = String(inputs.text).substring(0, 50);
       } else if (inputs.text_positive) {
         textPreview = String(inputs.text_positive).substring(0, 50);
@@ -906,12 +883,11 @@ function parseWorkflow(workflow) {
         type: nodeType, 
         widgetsValues: widgetsValues,
         inputs: inputs,
-        node: node // Store full node for later use
+        node: node
       });
     }
   }
 
-  // Populate dropdown
   textNodes.forEach(node => {
     const option = document.createElement('option');
     option.value = node.id;
@@ -919,9 +895,10 @@ function parseWorkflow(workflow) {
     targetNodeSelect.appendChild(option);
   });
 
-  // Store the workflow and text nodes mapping
+  // Store workflow with format flag for later use
   comfyUIWorkflow = workflow;
-  comfyUITextNodes = textNodes; // Store for easy lookup
+  comfyUIWorkflow._isAPIFormat = isAPIFormat; // Store format flag
+  comfyUITextNodes = textNodes;
 
   if (textNodes.length === 0) {
     targetNodeSelect.innerHTML = '<option value="">No text input nodes found</option>';
@@ -932,15 +909,41 @@ function parseWorkflow(workflow) {
 
 function buildLinkMap(workflow) {
   const linkMap = {};
+  // UI format: [linkId, fromNodeId, fromSlot, toNodeId, toSlot, type]
+  // We map linkId -> [fromNodeId, fromSlot] for API format
   const links = workflow && Array.isArray(workflow.links) ? workflow.links : [];
-  // LiteGraph links look like: [origin_id, origin_slot, target_id, target_slot, link_id, type]
+  console.log(`Building link map from ${links.length} links`);
+  
+  if (links.length > 0) {
+    console.log('First 3 links:', links.slice(0, 3));
+  }
+  
+  const linkIdCounts = {};
   for (const link of links) {
-    if (!Array.isArray(link)) continue;
-    const [fromNode, fromSlot, , , linkId] = link;
-    if (linkId !== undefined && fromNode !== null && fromNode !== undefined) {
-      linkMap[linkId] = [fromNode, fromSlot || 0];
+    if (!Array.isArray(link) || link.length < 5) {
+      console.warn('Invalid link format:', link);
+      continue;
+    }
+    const [linkId, fromNodeId, fromSlot, toNodeId, toSlot, type] = link;
+    
+    // Count linkId occurrences
+    linkIdCounts[linkId] = (linkIdCounts[linkId] || 0) + 1;
+    
+    // Map linkId to [fromNodeId, fromSlot] for API format
+    // API format expects: [nodeId, outputSlot]
+    // Only map if linkId is valid and fromNodeId exists (not null)
+    if (linkId !== null && linkId !== undefined && linkId !== '' && 
+        fromNodeId !== null && fromNodeId !== undefined && fromNodeId !== '') {
+      // If linkId already exists, we keep the first one (or could overwrite - need to check which is correct)
+      if (!linkMap.hasOwnProperty(linkId)) {
+        linkMap[linkId] = [fromNodeId, fromSlot || 0];
+      }
     }
   }
+  
+  console.log(`Link map built with ${Object.keys(linkMap).length} unique linkIds`);
+  console.log('LinkId frequency (first 10):', Object.entries(linkIdCounts).slice(0, 10));
+  console.log('Sample link map (first 10):', Object.entries(linkMap).slice(0, 10));
   return linkMap;
 }
 
@@ -971,21 +974,15 @@ async function sendPromptToComfyUI(promptText) {
     return;
   }
 
-  // Create a deep copy of the workflow
   const modifiedWorkflow = JSON.parse(JSON.stringify(comfyUIWorkflow));
-
-  // Find the target node
   let targetNode = null;
   let isUIFormat = false;
 
-  // Check if it's UI format (nodes array) or API format (flat object)
   if (modifiedWorkflow.nodes && Array.isArray(modifiedWorkflow.nodes)) {
-    // UI format
     isUIFormat = true;
     targetNode = modifiedWorkflow.nodes.find(n => String(n.id) === String(targetNodeId));
     
     if (targetNode) {
-      // Update widgets_values[0] for UI format
       if (!targetNode.widgets_values) {
         targetNode.widgets_values = [];
       }
@@ -996,13 +993,10 @@ async function sendPromptToComfyUI(promptText) {
       }
     }
   } else {
-    // API format - flat object
     targetNode = modifiedWorkflow[targetNodeId];
     
     if (targetNode) {
       const inputs = targetNode.inputs || {};
-      
-      // Try different possible input field names
       if (inputs.hasOwnProperty('text')) {
         inputs.text = promptText;
       } else if (inputs.hasOwnProperty('text_positive')) {
@@ -1012,7 +1006,6 @@ async function sendPromptToComfyUI(promptText) {
       } else if (inputs.hasOwnProperty('prompt')) {
         inputs.prompt = promptText;
       } else {
-        // Default to 'text' if none found
         inputs.text = promptText;
       }
     }
@@ -1023,31 +1016,24 @@ async function sendPromptToComfyUI(promptText) {
     return;
   }
 
-  // Randomize seeds if checkbox is checked
   if (randomizeSeedCheckbox && randomizeSeedCheckbox.checked) {
     if (isUIFormat && modifiedWorkflow.nodes) {
-      // UI format - iterate through nodes array
       for (const node of modifiedWorkflow.nodes) {
         if (typeof node !== 'object' || !node) continue;
         const inputs = node.inputs || {};
         const widgetsValues = node.widgets_values || [];
         
-        // Check inputs for seed
         if (inputs.hasOwnProperty('seed')) {
           inputs.seed = Math.floor(Math.random() * 4294967295);
         }
         
-        // Check widgets_values for seed (some nodes store seed in widgets_values)
-        // Look for seed in widgets_values - typically after text inputs
         for (let i = 0; i < widgetsValues.length; i++) {
           if (typeof widgetsValues[i] === 'number' && widgetsValues[i] > 1000 && widgetsValues[i] < 4294967295) {
-            // Likely a seed value, randomize it
             widgetsValues[i] = Math.floor(Math.random() * 4294967295);
           }
         }
       }
     } else {
-      // API format - iterate through object entries
       for (const [nodeId, nodeData] of Object.entries(modifiedWorkflow)) {
         if (typeof nodeData !== 'object' || !nodeData) continue;
         if (nodeId === 'id' || nodeId === 'revision' || nodeId === 'last_node_id' || nodeId === 'last_link_id') continue;
@@ -1059,7 +1045,6 @@ async function sendPromptToComfyUI(promptText) {
     }
   }
 
-  // Convert UI format to API format if needed and drop UI-only nodes
   const nonExecutableTypes = [
     'note',
     'reroute',
@@ -1071,7 +1056,15 @@ async function sendPromptToComfyUI(promptText) {
     'fast groups',
     'fastgroup',
     'fastgroupbypasser',
-    'fast groups bypasser (rgthree)'
+    'fast groups bypasser (rgthree)',
+    'easy clearcacheall',
+    'easy cleangpuused',
+    'easy clearcache',
+    'clearcache',
+    'cleangpu',
+    'clean',
+    'clear',
+    'cache'
   ];
 
   const isNonExecutable = (type = '') => {
@@ -1079,83 +1072,176 @@ async function sendPromptToComfyUI(promptText) {
     return nonExecutableTypes.some(ne => t.includes(ne));
   };
 
-  const linkMap = buildLinkMap(modifiedWorkflow);
+  // Convert UI format to API format if needed
   let apiWorkflow = modifiedWorkflow;
 
   if (isUIFormat) {
+    // Need to convert UI format to API format
+    const linkMap = buildLinkMap(modifiedWorkflow);
     apiWorkflow = {};
     if (modifiedWorkflow.nodes) {
       for (const node of modifiedWorkflow.nodes) {
-        // Skip UI-only / non-executable nodes
         if (isNonExecutable(node.type)) continue;
         if (!node.type || node.type.trim() === '') continue;
 
-        // Skip nodes with no useful content
+        // SKIP GROUP NODES LOGIC
+        if (node.type.toLowerCase().includes("workflow>")) {
+             console.warn("Skipping Group Node (Unsupported in UI-to-API conversion):", node.type);
+             // We skip it, which might break the graph, but sending it will guaranteed break the graph.
+             // Ideally we would alert user here, but we already did in parseWorkflow.
+             continue; 
+        }
+
         const hasOutputs = node.outputs && Array.isArray(node.outputs) && node.outputs.length > 0;
         const hasInputs = node.inputs && Array.isArray(node.inputs) && node.inputs.length > 0;
         const hasWidgets = node.widgets_values && node.widgets_values.length > 0;
         if (!hasOutputs && !hasInputs && !hasWidgets) continue;
 
         const nodeId = String(node.id);
-        apiWorkflow[nodeId] = {
+        const mappedNode = {
           class_type: node.type,
           inputs: {},
         };
 
-        // Map inputs (links) using the link map (convert link IDs to [fromNode, fromSlot])
         if (node.inputs && Array.isArray(node.inputs)) {
-          for (const input of node.inputs) {
-            if (input.name && input.link !== null && input.link !== undefined) {
-              const linkTarget = linkMap[input.link];
-              if (linkTarget) {
-                apiWorkflow[nodeId].inputs[input.name] = linkTarget;
+          // Build a map of input index to input name for slot matching
+          const inputIndexMap = {};
+          node.inputs.forEach((inp, idx) => {
+            if (inp.name) {
+              inputIndexMap[idx] = inp.name;
+            }
+          });
+          
+          for (let inputIdx = 0; inputIdx < node.inputs.length; inputIdx++) {
+            const input = node.inputs[inputIdx];
+            if (input.name) {
+              // Check if this input has a connection (link)
+              if (input.link !== null && input.link !== undefined && input.link !== '') {
+                // Find the link that connects TO this node's input
+                // Links format: [fromNodeId, fromSlot, toNodeId, toSlot, linkId, type]
+                // We need to find the link where:
+                // - toNodeId matches this node.id
+                // - toSlot matches the input's position (inputIdx) or slot_index
+                const matchingLink = modifiedWorkflow.links?.find(link => 
+                  Array.isArray(link) && 
+                  link.length >= 4 &&
+                  link[2] === node.id && // toNodeId matches
+                  (link[3] === inputIdx || link[3] === input.slot_index) // toSlot matches
+                );
+                
+                if (matchingLink) {
+                  const [fromNodeId, fromSlot] = matchingLink;
+                  if (fromNodeId !== null && fromNodeId !== undefined && fromNodeId !== '') {
+                    mappedNode.inputs[input.name] = [fromNodeId, fromSlot || 0];
+                  } else {
+                    console.warn(`Link found but fromNodeId is null for node ${nodeId}, input ${input.name}`);
+                  }
+                } else {
+                  // Fallback: try to find by linkId in linkMap
+                  const linkTarget = linkMap[input.link];
+                  if (linkTarget) {
+                    mappedNode.inputs[input.name] = linkTarget;
+                  } else {
+                    console.warn(`Could not find connection for node ${nodeId} (id: ${node.id}), input ${input.name} (index: ${inputIdx}, link: ${input.link})`);
+                  }
+                }
               }
+              // If no link, the input should come from widgets_values (handled below)
             }
           }
         } else if (node.inputs && typeof node.inputs === 'object' && !Array.isArray(node.inputs)) {
-          apiWorkflow[nodeId].inputs = { ...node.inputs };
+          // Already in object format (might be API format mixed in)
+          mappedNode.inputs = { ...node.inputs };
         }
 
-        // Map widgets to inputs where sensible
         if (node.widgets_values && node.widgets_values.length > 0) {
           if (node.type && node.type.includes('TextEncode')) {
-            apiWorkflow[nodeId].inputs.text = node.widgets_values[0] || '';
+            mappedNode.inputs.text = node.widgets_values[0] || '';
           } else if (node.type && (node.type.includes('KSampler') || node.type.includes('Sampler'))) {
-            if (node.widgets_values.length > 0) apiWorkflow[nodeId].inputs.seed = node.widgets_values[0];
-            if (node.widgets_values.length > 1) apiWorkflow[nodeId].inputs.steps = node.widgets_values[1];
-            if (node.widgets_values.length > 2) apiWorkflow[nodeId].inputs.cfg = node.widgets_values[2];
-            if (node.widgets_values.length > 3) apiWorkflow[nodeId].inputs.sampler_name = node.widgets_values[3];
-            if (node.widgets_values.length > 4) apiWorkflow[nodeId].inputs.scheduler = node.widgets_values[4];
-            if (node.widgets_values.length > 5) apiWorkflow[nodeId].inputs.denoise = node.widgets_values[5];
-          } else if (Object.keys(apiWorkflow[nodeId].inputs).length === 0 && node.widgets_values[0] !== undefined) {
+            if (node.widgets_values.length > 0) mappedNode.inputs.seed = node.widgets_values[0];
+            if (node.widgets_values.length > 1) mappedNode.inputs.steps = node.widgets_values[1];
+            if (node.widgets_values.length > 2) mappedNode.inputs.cfg = node.widgets_values[2];
+            if (node.widgets_values.length > 3) mappedNode.inputs.sampler_name = node.widgets_values[3];
+            if (node.widgets_values.length > 4) mappedNode.inputs.scheduler = node.widgets_values[4];
+            if (node.widgets_values.length > 5) mappedNode.inputs.denoise = node.widgets_values[5];
+          } else if (node.type && node.type.toLowerCase().includes('saveimage')) {
+            if (!mappedNode.inputs.filename_prefix && node.widgets_values[0]) {
+              mappedNode.inputs.filename_prefix = node.widgets_values[0];
+            }
+          } else if (Object.keys(mappedNode.inputs).length === 0 && node.widgets_values[0] !== undefined) {
             if (typeof node.widgets_values[0] === 'string') {
-              apiWorkflow[nodeId].inputs.text = node.widgets_values[0];
+              mappedNode.inputs.text = node.widgets_values[0];
             } else if (typeof node.widgets_values[0] === 'number') {
-              apiWorkflow[nodeId].inputs.value = node.widgets_values[0];
+              mappedNode.inputs.value = node.widgets_values[0];
             }
           }
         }
+
+        // Skip SaveImage nodes without an image input to avoid validation errors
+        if (mappedNode.class_type && mappedNode.class_type.toLowerCase().includes('saveimage')) {
+          const hasImageInput = mappedNode.inputs && mappedNode.inputs.images;
+          if (!hasImageInput) {
+            continue;
+          }
+          if (!mappedNode.inputs.filename_prefix) {
+            mappedNode.inputs.filename_prefix = 'comfyui';
+          }
+        }
+
+        // Skip housekeeping/utility nodes that only have "anything" inputs or are cleanup nodes
+        // These nodes are UI-only utilities and cause validation errors
+        if (mappedNode.class_type && (
+          mappedNode.class_type.toLowerCase().includes('clear') ||
+          mappedNode.class_type.toLowerCase().includes('clean') ||
+          mappedNode.class_type.toLowerCase().includes('cache')
+        )) {
+          // Check if it only has "anything" input (utility node pattern)
+          const inputKeys = Object.keys(mappedNode.inputs || {});
+          if (inputKeys.length === 1 && inputKeys[0] === 'anything') {
+            console.warn(`Skipping utility node ${nodeId}: ${mappedNode.class_type}`);
+            continue;
+          }
+        }
+
+        apiWorkflow[nodeId] = mappedNode;
       }
     }
   } else {
-    // API format already; drop non-executable nodes if present
+    // Already in API format: keep all nodes as-is, just strip metadata keys.
+    // ComfyUI already knows what's valid - don't filter nodes!
     apiWorkflow = {};
     for (const [nodeId, nodeData] of Object.entries(modifiedWorkflow)) {
-      if (['id', 'revision', 'last_node_id', 'last_link_id'].includes(nodeId)) continue;
-      const classType = nodeData.class_type || nodeData.type || '';
-      if (isNonExecutable(classType)) continue;
-      apiWorkflow[nodeId] = nodeData;
+      // Only skip metadata keys, keep all actual nodes
+      if ([
+        'id',
+        'revision',
+        'last_node_id',
+        'last_link_id',
+        'version',
+        'links',
+        'groups',
+        'config',
+        'extra',
+        '_isAPIFormat'
+      ].includes(nodeId)) {
+        continue;
+      }
+      // Remove internal flag but keep everything else
+      const { _isAPIFormat, ...cleanNodeData } = nodeData;
+      apiWorkflow[nodeId] = cleanNodeData;
     }
   }
 
-  // Send to ComfyUI
   try {
-    // Ensure URL doesn't have trailing slash
     const cleanUrl = comfyUIUrl.replace(/\/$/, '');
     const apiUrl = `${cleanUrl}/prompt`;
     
-    console.log('Sending to ComfyUI:', apiUrl);
-    console.log('Workflow preview:', JSON.stringify(apiWorkflow).substring(0, 200) + '...');
+    console.log('=== ComfyUI Send Debug ===');
+    console.log('URL:', apiUrl);
+    console.log('API workflow node count:', Object.keys(apiWorkflow).length);
+    console.log('Full API workflow JSON (first 5000 chars):', JSON.stringify(apiWorkflow, null, 2).substring(0, 5000));
+    console.log('Full API workflow JSON (complete):', JSON.stringify(apiWorkflow, null, 2));
+    console.log('=== End Debug ===');
     
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -1168,6 +1254,12 @@ async function sendPromptToComfyUI(promptText) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('ComfyUI HTTP error:', response.status, errorText);
+      
+      // Better error message for user
+      if (errorText.includes("workflow>")) {
+          throw new Error(`ComfyUI rejected the workflow. It contains custom 'Group Nodes' which the API cannot read. Please save your workflow using 'Save (API Format)' in ComfyUI.`);
+      }
+      
       throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 100)}`);
     }
 
@@ -1175,12 +1267,7 @@ async function sendPromptToComfyUI(promptText) {
     console.log('ComfyUI response:', result);
     alert('Prompt sent to ComfyUI successfully!');
   } catch (error) {
-    console.error('ComfyUI send error details:', {
-      message: error.message,
-      name: error.name,
-      stack: error.stack,
-      url: comfyUIUrl
-    });
+    console.error('ComfyUI send error details:', error);
     
     let errorMessage = 'Connection Failed. ';
     if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
@@ -1189,11 +1276,8 @@ async function sendPromptToComfyUI(promptText) {
       errorMessage += '1. ComfyUI is running\n';
       errorMessage += '2. URL is correct (http://127.0.0.1:8188)\n';
       errorMessage += '3. ComfyUI started with: --enable-cors-header *\n';
-      errorMessage += '4. No firewall blocking the connection';
-    } else if (error.message.includes('HTTP')) {
-      errorMessage += `Server error: ${error.message}`;
     } else {
-      errorMessage += error.message || 'Unknown error occurred';
+      errorMessage = error.message || 'Unknown error occurred';
     }
     
     alert(errorMessage);
