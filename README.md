@@ -187,7 +187,6 @@ You can get local T2I or T2V AI models from [Civitai](https://civitai.com/) or [
     <img src="assets/sample14.jpeg" alt="Image 14" width="200" title="wriggler, widow's weed, igniter, dragging, palace of the fairies, electric light, by Felix Nadar, PBR, Unreal Engine, White Balance, Paper Model, Infrared, Dot Art, Horrifying, Pasetl Art, Realistic"/>
     <img src="assets/sample15.jpeg" alt="Image 15" width="200" title="zombie king, grizzle, shield made of flowers canteen, queening it over, cloud city, pink skies, by Caravaggio Michelangelo Merisi, Subsurface Scattering, Cinema4d Model, Canon50, Wood-Carving, Infrared, Cel Shading, Funny, Graphite, Minimalist"/>
     <img src="assets/sample16.jpeg" alt="Image 16" width="200" title="homunculus, grizzle, breathalyser, commiting entablature, Starry Sky, children's drawing, Environment Design, Zbrush sculpt"/>
-    <!-- Add more images here -->
   </p>
 </div>
 
