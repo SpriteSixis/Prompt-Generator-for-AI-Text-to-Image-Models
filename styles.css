@@ -1256,3 +1256,168 @@ input[type="number"]::before {
   right: 5px;
   bottom: 5px;
 }
+
+/* AI Assistant */
+#ai-assistant-container {
+  width: 100%;
+  background: rgba(22, 39, 54, 0.85);
+  border: 1px solid #32e2df66;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.ai-assistant-title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  color: #32e2df;
+  font-weight: bold;
+  text-align: center;
+}
+
+#aiInput {
+  width: 100%;
+  min-height: 40px;
+  max-height: 100px;
+  height: 40px;
+  resize: none;
+  overflow-y: auto;
+  margin: 8px 0;
+  background: #1f3750;
+  border: 1px solid #32e2df66;
+  color: white;
+  border-radius: 8px;
+  padding: 8px 10px;
+  transition: height 0.12s ease;
+}
+
+#aiInput:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px #32e2df;
+}
+
+#ai-assistant-container .button {
+  width: 100%;
+  margin: 4px 0;
+}
+
+#ai-assistant-container #connectLLMBtn {
+  width: 100%;
+  margin: 0 0 8px 0;
+}
+
+/* LLM Connection Button States */
+#ai-assistant-container #connectLLMBtn.llm-connected {
+  background-color: #198a33;
+  color: white;
+}
+
+#ai-assistant-container #connectLLMBtn.llm-connected:hover {
+  background-color: #218838;
+  color: white;
+}
+
+#ai-assistant-container #connectLLMBtn.llm-connected::before {
+  background-color: rgba(40, 167, 69, 0.644);
+  mix-blend-mode: screen;
+}
+
+#ai-assistant-container #connectLLMBtn.llm-connected:hover::before {
+  background-color: rgba(33, 136, 56, 0.644);
+  mix-blend-mode: screen;
+}
+
+#ai-assistant-container #connectLLMBtn.llm-disconnected {
+  background-color: #6c757d;
+  color: white;
+}
+
+#ai-assistant-container #connectLLMBtn.llm-disconnected:hover {
+  background-color: #5a6268;
+  color: white;
+}
+
+#ai-assistant-container #connectLLMBtn.llm-disconnected::before {
+  background-color: rgba(108, 117, 125, 0.644);
+  mix-blend-mode: screen;
+}
+
+#ai-assistant-container #connectLLMBtn.llm-disconnected:hover::before {
+  background-color: rgba(90, 98, 104, 0.644);
+  mix-blend-mode: screen;
+}
+
+/* Send Prompt Button - Teal-ish Dark Blue */
+#ai-assistant-container #sendAIQueryBtn {
+  background-color: #0e29a3;
+  color: white;
+}
+
+#ai-assistant-container #sendAIQueryBtn:hover {
+  background-color: #3667d1;
+  color: white;
+}
+
+#ai-assistant-container #sendAIQueryBtn::before {
+  background-color: rgba(26, 95, 122, 0.644);
+  mix-blend-mode: screen;
+}
+
+#ai-assistant-container #sendAIQueryBtn:hover::before {
+  background-color: rgba(42, 127, 160, 0.644);
+  mix-blend-mode: screen;
+}
+
+.ai-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 12px;
+}
+
+.ai-modal.show {
+  display: flex;
+}
+
+.ai-modal-content {
+  background: #0f1c2b;
+  border: 1px solid #32e2df66;
+  border-radius: 12px;
+  padding: 16px;
+  width: min(420px, 90%);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+.ai-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+#apiKeyInput {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.llm-setting-group {
+  margin-top: 10px;
+}
+
+.llm-setting-group label {
+  display: block;
+  margin-top: 8px;
+}
+
+.llm-setting-group input,
+.llm-setting-group select {
+  width: 100%;
+  margin-top: 6px;
+}

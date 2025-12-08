@@ -13,15 +13,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39+Extended+Text&display=swap" rel="stylesheet">
   <link rel="icon" type="image/x-icon" href="assets/PromptGeneratorFaviconV03.ico">
-  <!-- Google tag (gtag.js) -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-5T00NKQJ8Y"></script>
-        <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag() { dataLayer.push(arguments); }
-          gtag('js', new Date());
+  <script>
+    const GTAG_ID = window.GTAG_ID || document.documentElement.dataset.gtagId || '';
+    if (GTAG_ID) {
+      const gtagScript = document.createElement('script');
+      gtagScript.async = true;
+      gtagScript.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(GTAG_ID)}`;
+      document.head.appendChild(gtagScript);
 
-          gtag('config', 'G-5T00NKQJ8Y');
-        </script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', GTAG_ID);
+    } else {
+      console.warn('GTAG_ID not set; Google Analytics disabled.');
+    }
+  </script>
 </head>
 
 <body class="bg-gray-900 text-white min-h-screen">
@@ -31,6 +38,12 @@
       <!-- Button section -->
       <div class="button-section">
         <div class="button-group mt-4">
+          <div id="ai-assistant-container">
+            <h3 class="ai-assistant-title">AI Assistant</h3>
+            <button id="connectLLMBtn" class="btn button btn-info" title="Connect your OpenAI API Key">Connect LLM</button>
+            <textarea id="aiInput" class="soft-ui-input" placeholder="Ask LLM to build a prompt setup...&#10;e.g., Create a Dark Fantasy prompt setup"></textarea>
+            <button id="sendAIQueryBtn" class="btn button btn-primary" title="Send your request to the LLM">Send Prompt</button>
+          </div>
           <button id="addCategoryBtn" class="btn button btn-primary ml-2"
             title="Create Category Container. Shift + Alt + N">New
             Category</button>
@@ -58,7 +71,7 @@
             title="Sets Number of Random Words to be Drawn from Database.">
           <button id="randomizeBtn" class="btn button randomize-btn"
             title="Pull a Set Number of Random Words from Database. Shift + Alt + W">Randomize</button>
-          <label class="bold-label" for="randomness">Randomness:</label>
+          <label class="bold-label" for="randomness">Prompts Randomness:</label>
           <input
             type="range"
             id="randomness"
@@ -141,10 +154,41 @@
         </div>
         <div id="footer">
           <p>
-            Version 1.1.2 | Put together by Sprite6 © 2023-2025<br>
+            Version 2.0 | Put together by Sprite6 © 2023-2025<br>
             Open Source under the <a href="https://opensource.org/licenses/MIT" target="_blank" style="color: gray;">MIT License</a>.
             Feel free to fork and modify.
           </p>
+        </div>
+
+        <div id="apiKeyModal" class="ai-modal" aria-hidden="true">
+          <div class="ai-modal-content">
+            <h4>Connect LLM</h4>
+            <label for="llmProvider" class="bold-label">Provider</label>
+            <select id="llmProvider" class="soft-ui-input">
+              <option value="openai">Official OpenAI API</option>
+              <option value="local">Local / Custom (LM Studio, Ollama, etc.)</option>
+            </select>
+
+            <div id="openaiSettings" class="llm-setting-group">
+              <label for="apiKeyInput" class="bold-label">API Key</label>
+              <input type="password" id="apiKeyInput" class="soft-ui-input" placeholder="sk-..." autocomplete="off" />
+            </div>
+
+            <div id="localSettings" class="llm-setting-group" style="display: none;">
+              <label for="llmBaseUrl" class="bold-label">Base URL</label>
+              <input type="text" id="llmBaseUrl" class="soft-ui-input" placeholder="http://localhost:1234/v1" autocomplete="off" />
+
+              <label for="llmModelName" class="bold-label">Model Name (optional)</label>
+              <input type="text" id="llmModelName" class="soft-ui-input" placeholder="llama-3-8b" value="local-model" autocomplete="off" />
+
+              <label for="llmLocalApiKey" class="bold-label">API Key (optional)</label>
+              <input type="text" id="llmLocalApiKey" class="soft-ui-input" placeholder="not-needed" value="not-needed" autocomplete="off" />
+            </div>
+            <div class="ai-modal-actions">
+              <button id="saveApiKeyBtn" class="btn button btn-success">Save Settings</button>
+              <button id="closeApiKeyModalBtn" class="btn button btn-secondary">Close</button>
+            </div>
+          </div>
         </div>
 
         <script src="data.js"></script>

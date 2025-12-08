@@ -1,8 +1,8 @@
 // ============================================================================
 // CONFIG & CONSTANTS
 // ============================================================================
-const categoryNames = ['SUBJECTS', 'CLOTHING', 'PROPS', 'POSES', 'SETTINGS', 'SCENE'];
-const advancedCategoryNames = ["ARTISTS", "CGI RENDERINGS", "CGI SOFTWARES", "CAMERAS", "CARVINGS AND ETCHINGS", "COLORS", "DRAWING STYLES", "EMOTIONS", "PENS", "VISUAL STYLES"];
+const categoryNames = ['SUBJECTS', 'FEMALE SUBJECTS', 'CLOTHING', 'CLOTHING STYLES', 'PROPS', 'POSES', 'SETTINGS', 'SCENE', 'SURREAL SCENE'];
+const advancedCategoryNames = ["ARTISTS", "CGI RENDERINGS", "CGI SOFTWARES", "CAMERAS", "CARVINGS AND ETCHINGS", "COLORS", "DRAWING STYLES", "EMOTIONS", "PENS", "VISUAL STYLES", "FORMAT"];
 
 // ============================================================================
 // GLOBAL STATE
@@ -13,6 +13,7 @@ let textUndoStack = {}; // Change this to an object
 let textRedoStack = {}; // Change this to an object
 let duplicateCounters = {};
 let categoryIdCounter = 0;
+let templateIdCounter = 0;
 let dragCategory; // Variable to store the dragged category container
 let randomness = 1.0; // Randomness strength (0 = sequential, 1 = full chaos)
 let lastIndexByCategory = {}; // Track last index used for each category
@@ -32,6 +33,19 @@ const undoRemoveAllButton = document.getElementById('undoRemoveAllButton');
 const undoClearAllButton = document.getElementById('undoClearAllButton');
 const templateContainer = document.getElementById('templateContainer');
 const addTemplateBtn = document.getElementById('addTemplateBtn');
+const connectLLMBtn = document.getElementById('connectLLMBtn');
+const sendAIQueryBtn = document.getElementById('sendAIQueryBtn');
+const aiInput = document.getElementById('aiInput');
+const apiKeyModal = document.getElementById('apiKeyModal');
+const apiKeyInput = document.getElementById('apiKeyInput');
+const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+const closeApiKeyModalBtn = document.getElementById('closeApiKeyModalBtn');
+const llmProviderSelect = document.getElementById('llmProvider');
+const llmBaseUrlInput = document.getElementById('llmBaseUrl');
+const llmModelNameInput = document.getElementById('llmModelName');
+const llmLocalApiKeyInput = document.getElementById('llmLocalApiKey');
+const openaiSettingsGroup = document.getElementById('openaiSettings');
+const localSettingsGroup = document.getElementById('localSettings');
 
 let lastTemplateTextarea = null;
 
@@ -81,10 +95,25 @@ function getTemplateTargetTextarea() {
 function appendTextToTemplate(text) {
   const targetTextarea = getTemplateTargetTextarea();
   if (!targetTextarea) return null;
+  
+  // Initialize undo stack if it doesn't exist
+  if (!textUndoStack[targetTextarea.id]) textUndoStack[targetTextarea.id] = [];
+  if (!textRedoStack[targetTextarea.id]) textRedoStack[targetTextarea.id] = [];
+  
+  // Push current state to undo stack before changing
+  textUndoStack[targetTextarea.id].push(targetTextarea.value);
+  
+  // Clear redo stack
+  textRedoStack[targetTextarea.id].length = 0;
+  
   let currentTemplate = targetTextarea.value;
   currentTemplate = currentTemplate.replace(/^,\s*/, '');
   currentTemplate += (currentTemplate === '' ? '' : ', ') + text;
   targetTextarea.value = currentTemplate;
+  
+  // Push new state to undo stack
+  textUndoStack[targetTextarea.id].push(currentTemplate);
+  
   autoResizeTemplateTextarea(targetTextarea);
   return targetTextarea;
 }
@@ -168,6 +197,48 @@ function createTemplateCard(text = '', isActive = true, isLocked = false) {
   });
   controls.appendChild(duplicateButton);
 
+  const randomTemplateButton = document.createElement('button');
+  randomTemplateButton.textContent = 'Random Template';
+  randomTemplateButton.classList.add('button', 'random-template-btn', 'template-control-btn');
+  randomTemplateButton.title = 'Insert a random template from PROMPT TEMPLATES category';
+  randomTemplateButton.addEventListener('click', () => {
+    // Check if textarea is locked
+    if (lockCheckbox.checked) {
+      alert('Template is locked. Unlock it first to modify.');
+      return;
+    }
+    
+    // Get random template from PROMPT TEMPLATES category
+    if (data && data['PROMPT TEMPLATES'] && Array.isArray(data['PROMPT TEMPLATES']) && data['PROMPT TEMPLATES'].length > 0) {
+      const templates = data['PROMPT TEMPLATES'];
+      const randomIndex = Math.floor(Math.random() * templates.length);
+      const randomTemplate = templates[randomIndex];
+      
+      // Initialize undo stack if it doesn't exist
+      if (!textUndoStack[textarea.id]) textUndoStack[textarea.id] = [];
+      if (!textRedoStack[textarea.id]) textRedoStack[textarea.id] = [];
+      
+      // Push current state to undo stack before changing
+      textUndoStack[textarea.id].push(textarea.value);
+      
+      // Clear redo stack
+      textRedoStack[textarea.id].length = 0;
+      
+      // Set the textarea value to the random template
+      textarea.value = randomTemplate;
+      autoResizeTemplateTextarea(textarea);
+      
+      // Push new state to undo stack
+      textUndoStack[textarea.id].push(randomTemplate);
+      
+      // Focus the textarea
+      textarea.focus();
+    } else {
+      alert('No templates found in PROMPT TEMPLATES category.');
+    }
+  });
+  controls.appendChild(randomTemplateButton);
+
   const deleteButton = document.createElement('button');
   deleteButton.textContent = 'Delete';
   deleteButton.classList.add('button', 'remove-btn', 'template-control-btn');
@@ -190,6 +261,8 @@ function createTemplateCard(text = '', isActive = true, isLocked = false) {
   controls.appendChild(deleteButton);
 
   const textarea = document.createElement('textarea');
+  textarea.id = `template-${templateIdCounter}`;
+  templateIdCounter++;
   textarea.classList.add('soft-ui-input', 'template-text');
   textarea.rows = 4;
   textarea.spellcheck = true;
@@ -198,7 +271,21 @@ function createTemplateCard(text = '', isActive = true, isLocked = false) {
   textarea.value = text;
   textarea.readOnly = isLocked;
   textarea.classList.toggle('locked-textarea', isLocked);
-  textarea.addEventListener('input', () => autoResizeTemplateTextarea(textarea));
+  
+  // Initialize undo stack with initial value
+  if (!textUndoStack[textarea.id]) textUndoStack[textarea.id] = [];
+  textUndoStack[textarea.id].push(text);
+  if (!textRedoStack[textarea.id]) textRedoStack[textarea.id] = [];
+  
+  // Add input listener for auto-resize and undo stack
+  textarea.addEventListener('input', (event) => {
+    autoResizeTemplateTextarea(textarea);
+    handleInput(event);
+  });
+  
+  // Add keydown listener for undo/redo
+  textarea.addEventListener('keydown', handleKeyDown);
+  
   textarea.addEventListener('focus', () => {
     lastTemplateTextarea = textarea;
   });
@@ -255,6 +342,367 @@ function setTemplateCardsFromData(templateData, options = {}) {
   const finalTextarea = getTemplateTextareas().slice(-1)[0];
   if (finalTextarea) {
     lastTemplateTextarea = finalTextarea;
+  }
+}
+
+// ============================================================================
+// AI ASSISTANT
+// ============================================================================
+
+function autoResize(textarea) {
+  if (!textarea) return;
+  const minHeight = 40;
+  const maxHeight = 100;
+  textarea.style.height = 'auto';
+  const newHeight = Math.min(Math.max(textarea.scrollHeight, minHeight), maxHeight);
+  textarea.style.height = `${newHeight}px`;
+  textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
+}
+
+function updateLLMSettingsVisibility(providerValue) {
+  const provider = providerValue || (llmProviderSelect ? llmProviderSelect.value : 'openai');
+  if (openaiSettingsGroup) {
+    openaiSettingsGroup.style.display = provider === 'openai' ? 'block' : 'none';
+  }
+  if (localSettingsGroup) {
+    localSettingsGroup.style.display = provider === 'local' ? 'block' : 'none';
+  }
+}
+
+function showApiKeyModal() {
+  if (!apiKeyModal) return;
+  apiKeyModal.classList.add('show');
+  apiKeyModal.setAttribute('aria-hidden', 'false');
+  loadStoredLLMSettings();
+  const provider = llmProviderSelect ? llmProviderSelect.value : 'openai';
+  updateLLMSettingsVisibility(provider);
+  if (provider === 'openai' && apiKeyInput) {
+    apiKeyInput.focus();
+  } else if (provider === 'local' && llmBaseUrlInput) {
+    llmBaseUrlInput.focus();
+  }
+}
+
+function hideApiKeyModal() {
+  if (!apiKeyModal) return;
+  apiKeyModal.classList.remove('show');
+  apiKeyModal.setAttribute('aria-hidden', 'true');
+}
+
+function setLLMButtonConnected() {
+  if (!connectLLMBtn) return;
+  const provider = localStorage.getItem('llm_provider') || 'openai';
+  const hasOpenAIKey = !!localStorage.getItem('openai_api_key');
+  const hasLocalBase = !!localStorage.getItem('llm_base_url');
+  const isConnected = (provider === 'openai' && hasOpenAIKey) || (provider === 'local' && hasLocalBase);
+  
+  if (isConnected) {
+    connectLLMBtn.textContent = 'LLM Connected (Reset)';
+    connectLLMBtn.classList.remove('llm-disconnected');
+    connectLLMBtn.classList.add('llm-connected');
+  } else {
+    connectLLMBtn.textContent = 'Connect LLM';
+    connectLLMBtn.classList.remove('llm-connected');
+    connectLLMBtn.classList.add('llm-disconnected');
+  }
+}
+
+function loadStoredLLMSettings() {
+  const provider = localStorage.getItem('llm_provider') || 'openai';
+  const storedKey = localStorage.getItem('openai_api_key') || '';
+  const storedBaseUrl = localStorage.getItem('llm_base_url') || '';
+  const storedModelName = localStorage.getItem('llm_model_name') || 'local-model';
+  const storedLocalKey = localStorage.getItem('llm_local_api_key') || 'not-needed';
+
+  if (llmProviderSelect) {
+    llmProviderSelect.value = provider;
+  }
+  if (apiKeyInput) {
+    apiKeyInput.value = storedKey;
+  }
+  if (llmBaseUrlInput) {
+    llmBaseUrlInput.value = storedBaseUrl;
+  }
+  if (llmModelNameInput) {
+    llmModelNameInput.value = storedModelName || 'local-model';
+  }
+  if (llmLocalApiKeyInput) {
+    llmLocalApiKeyInput.value = storedLocalKey || 'not-needed';
+  }
+  updateLLMSettingsVisibility(provider);
+}
+
+function saveLLMSettings() {
+  const provider = llmProviderSelect ? llmProviderSelect.value : 'openai';
+  const key = apiKeyInput ? apiKeyInput.value.trim() : '';
+  const baseUrl = llmBaseUrlInput ? llmBaseUrlInput.value.trim() : '';
+  const modelName = llmModelNameInput ? llmModelNameInput.value.trim() : '';
+  const localKey = llmLocalApiKeyInput ? llmLocalApiKeyInput.value.trim() : '';
+
+  if (provider === 'openai' && !key) {
+    alert('Please enter a valid OpenAI API key.');
+    return;
+  }
+
+  if (provider === 'local' && !baseUrl) {
+    alert('Please enter a Base URL for your local LLM (e.g., http://localhost:1234/v1).');
+    return;
+  }
+
+  localStorage.setItem('llm_provider', provider);
+  localStorage.setItem('openai_api_key', key);
+  localStorage.setItem('llm_base_url', baseUrl);
+  localStorage.setItem('llm_model_name', modelName || 'local-model');
+  localStorage.setItem('llm_local_api_key', localKey || '');
+
+  setLLMButtonConnected();
+  hideApiKeyModal();
+}
+
+function sanitizeJsonResponse(raw) {
+  if (!raw || typeof raw !== 'string') return '';
+  return raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+}
+
+function findCategoryContainerByName(name) {
+  if (!name) return null;
+  const normalized = name.trim().toUpperCase();
+  return Array.from(document.querySelectorAll('.category')).find(category => {
+    const headerName = category.querySelector('.category-header-name');
+    return headerName && headerName.textContent.trim().toUpperCase() === normalized;
+  }) || null;
+}
+
+function appendWordsToCategory(categoryElement, wordsString) {
+  if (!categoryElement || !wordsString) return;
+  const textarea = categoryElement.querySelector('textarea');
+  if (!textarea) return;
+
+  const cleanedWords = Array.isArray(wordsString) ? wordsString : wordsString.split(',').map(word => word.trim()).filter(Boolean);
+  if (!cleanedWords.length) return;
+
+  const newWordsText = cleanedWords.join(', ');
+  const currentValue = textarea.value.trim();
+  const separator = currentValue && !currentValue.endsWith(',') ? ', ' : '';
+  textarea.value = currentValue ? `${currentValue}${separator}${newWordsText}` : newWordsText;
+
+  if (!textUndoStack[textarea.id]) textUndoStack[textarea.id] = [];
+  textUndoStack[textarea.id].push(textarea.value);
+}
+
+function upsertCategoryFromLLM(entry) {
+  if (!entry || !entry.name) return;
+  const normalizedName = entry.name.trim().toUpperCase();
+  const words = typeof entry.words === 'string' ? entry.words : Array.isArray(entry.words) ? entry.words.join(', ') : '';
+
+  let categoryElement = findCategoryContainerByName(normalizedName);
+  if (!categoryElement) {
+    categoryElement = createCategoryComponent(normalizedName);
+    categoriesContainer.appendChild(categoryElement);
+    setTimeout(() => updateAllMoveButtons(), 0);
+  }
+
+  appendWordsToCategory(categoryElement, words);
+}
+
+function applyTemplateFromLLM(templateText) {
+  if (!templateText) return;
+  const targetTextarea = getTemplateTargetTextarea();
+  if (!targetTextarea) return;
+  
+  // Initialize undo stack if it doesn't exist
+  if (!textUndoStack[targetTextarea.id]) textUndoStack[targetTextarea.id] = [];
+  if (!textRedoStack[targetTextarea.id]) textRedoStack[targetTextarea.id] = [];
+  
+  // Push current state to undo stack before changing
+  textUndoStack[targetTextarea.id].push(targetTextarea.value);
+  
+  // Clear redo stack
+  textRedoStack[targetTextarea.id].length = 0;
+  
+  targetTextarea.value = templateText;
+  
+  // Push new state to undo stack
+  textUndoStack[targetTextarea.id].push(templateText);
+  
+  autoResizeTemplateTextarea(targetTextarea);
+}
+
+function setAIPending(isPending) {
+  if (!sendAIQueryBtn) return;
+  sendAIQueryBtn.disabled = isPending;
+  sendAIQueryBtn.textContent = isPending ? 'Thinking...' : 'Send Prompt';
+}
+
+function getLLMSettings() {
+  return {
+    provider: localStorage.getItem('llm_provider') || 'openai',
+    openaiKey: localStorage.getItem('openai_api_key') || '',
+    baseUrl: localStorage.getItem('llm_base_url') || '',
+    modelName: localStorage.getItem('llm_model_name') || 'local-model',
+    localApiKey: localStorage.getItem('llm_local_api_key') || ''
+  };
+}
+
+async function sendAIQuery() {
+  const settings = getLLMSettings();
+  const prompt = aiInput ? aiInput.value.trim() : '';
+  if (!prompt) {
+    alert('Please enter a prompt for the LLM.');
+    return;
+  }
+
+  const systemMessage = {
+    role: "system",
+    content: `You are an intelligent assistant for a 'Random Prompt Generator' app. Your goal is to help the user build creative setups for AI image generation based on their request.
+
+    INSTRUCTIONS:
+
+    1. You must respond with **ONLY valid JSON**. Do not include markdown formatting, backticks, or conversational text.
+
+    2. Analyze the user's request (e.g., "Create a Dark Fantasy setup" or "I need ideas for Sci-Fi portraits").
+
+    3. Generate relevant **Categories** (lists of creative, comma-separated words/phrases).
+
+    4. Generate a **Template** (a sentence structure using those categories in square brackets).
+
+    JSON STRUCTURE:
+
+    {
+      "categories": [
+        { "name": "CATEGORY_NAME", "words": "item1, item2, item3..." }
+      ],
+      "template": "A sentence using [CATEGORY_NAME] placeholders."
+    }
+
+    RULES:
+
+    - Category names should be UPPERCASE to match the app's style (e.g., "SUBJECTS", "LIGHTING").
+
+    - Provide at least 10-15 varied items per category to ensure good randomization.
+
+    - Ensure every [PLACEHOLDER] in the template has a corresponding category in the list.
+
+    - If the user asks for a specific style (e.g. "Sora video" or "Stable Diffusion"), tailor the template structure accordingly.`
+  };
+
+  setAIPending(true);
+
+  const headers = { 'Content-Type': 'application/json' };
+  const messages = [
+    systemMessage,
+    { role: 'user', content: prompt }
+  ];
+
+  const payload = {
+    model: "gpt-3.5-turbo",
+    temperature: 0.7,
+    messages
+  };
+
+  let endpoint = 'https://api.openai.com/v1/chat/completions';
+
+  if (settings.provider === 'local') {
+    if (!settings.baseUrl) {
+      alert('Please connect your Local LLM base URL first.');
+      setAIPending(false);
+      return;
+    }
+    endpoint = settings.baseUrl.trim();
+    if (!/\/chat\/completions\/?$/i.test(endpoint)) {
+      endpoint = endpoint.replace(/\/$/, '') + '/chat/completions';
+    }
+    payload.model = settings.modelName || 'local-model';
+    headers['Authorization'] = `Bearer ${settings.localApiKey || 'lm-studio'}`;
+  } else {
+    if (!settings.openaiKey) {
+      alert('Please connect your OpenAI API key first.');
+      setAIPending(false);
+      return;
+    }
+    headers['Authorization'] = `Bearer ${settings.openaiKey}`;
+    payload.model = "gpt-3.5-turbo";
+  }
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error(`LLM request failed with status ${response.status}`);
+    }
+
+    const data = await response.json();
+    const rawContent = data?.choices?.[0]?.message?.content || '';
+    const cleaned = sanitizeJsonResponse(rawContent);
+
+    let parsed;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch (parseError) {
+      console.error('Failed to parse LLM response', parseError, cleaned);
+      alert('Could not parse LLM response. Please try again.');
+      return;
+    }
+
+    const categoriesPayload = Array.isArray(parsed.categories) ? parsed.categories : [];
+    categoriesPayload.forEach(entry => upsertCategoryFromLLM(entry));
+
+    if (parsed.template) {
+      applyTemplateFromLLM(parsed.template);
+    }
+  } catch (error) {
+    console.error('LLM request failed', error);
+    if (settings.provider === 'local') {
+      alert('Could not connect to Local Host. Ensure CORS is enabled and the server is running.');
+    } else {
+      alert('LLM request failed. Please check the console for details and verify your API key.');
+    }
+  } finally {
+    setAIPending(false);
+  }
+}
+
+function initializeAIAssistant() {
+  if (aiInput) {
+    autoResize(aiInput);
+    aiInput.addEventListener('input', () => autoResize(aiInput));
+  }
+
+  loadStoredLLMSettings();
+  setLLMButtonConnected();
+
+  if (connectLLMBtn) {
+    connectLLMBtn.addEventListener('click', showApiKeyModal);
+  }
+
+  if (saveApiKeyBtn) {
+    saveApiKeyBtn.addEventListener('click', saveLLMSettings);
+  }
+
+  if (closeApiKeyModalBtn) {
+    closeApiKeyModalBtn.addEventListener('click', hideApiKeyModal);
+  }
+
+  if (llmProviderSelect) {
+    llmProviderSelect.addEventListener('change', (event) => {
+      updateLLMSettingsVisibility(event.target.value);
+    });
+  }
+
+  if (apiKeyModal) {
+    apiKeyModal.addEventListener('click', (event) => {
+      if (event.target === apiKeyModal) {
+        hideApiKeyModal();
+      }
+    });
+  }
+
+  if (sendAIQueryBtn) {
+    sendAIQueryBtn.addEventListener('click', sendAIQuery);
   }
 }
 
@@ -875,6 +1323,7 @@ categoryNames.forEach(categoryName => {
 // Update move buttons after all categories are created
 setTimeout(() => updateAllMoveButtons(), 0);
 ensureTemplateCardExists();
+initializeAIAssistant();
 
 // ============================================================================
 // KEYBOARD SHORTCUTS - Consolidated hotkey handler
@@ -1673,9 +2122,23 @@ function addAllToTemplate() {
   const targetTextarea = getTemplateTargetTextarea();
   if (!targetTextarea) return;
 
+  // Initialize undo stack if it doesn't exist
+  if (!textUndoStack[targetTextarea.id]) textUndoStack[targetTextarea.id] = [];
+  if (!textRedoStack[targetTextarea.id]) textRedoStack[targetTextarea.id] = [];
+  
+  // Push current state to undo stack before changing
+  textUndoStack[targetTextarea.id].push(targetTextarea.value);
+  
+  // Clear redo stack
+  textRedoStack[targetTextarea.id].length = 0;
+
   let currentTemplate = targetTextarea.value.replace(/^,\s*/, '');
   currentTemplate += (currentTemplate.length > 0 ? ', ' : '') + categoryString;
   targetTextarea.value = currentTemplate;
+  
+  // Push new state to undo stack
+  textUndoStack[targetTextarea.id].push(currentTemplate);
+  
   autoResizeTemplateTextarea(targetTextarea);
 }
 
