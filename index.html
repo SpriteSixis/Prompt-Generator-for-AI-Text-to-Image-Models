@@ -40,6 +40,7 @@
         <div class="button-group mt-4">
           <div id="ai-assistant-container">
             <h3 class="ai-assistant-title">AI Assistant</h3>
+            <p class="ai-assistant-warning" style="color: #fff; font-size: 0.85rem; margin: 0.5rem 0 1rem 0; opacity: 0.9;">💡 Tip: Start from scratch with "Delete All" at the bottom right of the page for best results—the LLM generates all containers.</p>
             <button id="connectLLMBtn" class="btn button btn-info" title="Connect your OpenAI API Key">Connect LLM</button>
             <textarea id="aiInput" class="soft-ui-input" placeholder="Ask LLM to build a prompt setup...&#10;e.g., Create a Dark Fantasy prompt setup"></textarea>
             <button id="sendAIQueryBtn" class="btn button btn-primary" title="Send your request to the LLM">Send Prompt</button>
@@ -168,6 +169,10 @@
               <option value="openai">Official OpenAI API</option>
               <option value="local">Local / Custom (LM Studio, Ollama, etc.)</option>
             </select>
+
+            <p id="local-warning-text" class="text-xs text-yellow-400 mt-2" style="display: none; font-style: italic; color: #fbbf24; font-size: 0.75rem; margin-top: 0.5rem;">
+              ⚠️ <b>Note:</b> To connect to a local host (http://localhost...), you generally must run this app locally (download the HTML) rather than using the online version, or browsers will block the connection due to Mixed Content security rules.
+            </p>
 
             <div id="openaiSettings" class="llm-setting-group">
               <label for="apiKeyInput" class="bold-label">API Key</label>

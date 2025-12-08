@@ -63,6 +63,7 @@ The sidebar offers a range of convenient features to streamline your workflow:
 *(The **Randomize** Button in action.)*
 
 - **Randomize Button**: Populates categories with a set number of random words.
+- **Prompts Randomness Slider**: Controls how sequential versus random the word selection is. At 0 (Sequential), words are picked in order from each category (A, A, A, B, B, B...), which is great for testing consistency or creating variations on a theme. At 1 (Full chaos), words are completely randomized (C, A, E, B, D...), perfect for maximum variety and surprise. You can fine-tune anywhere in between to find the sweet spot for your workflow.
 - **Generate Button**: The star of the show, which makes everything happen. `Shift + Alt + G`
 - **Undo Delete Category Button**: Restores deleted category containers.
 - **Add All to Template Button**: Adds the `[CATEGORY]` name of all the containers with an active include checkbox to the template.
@@ -142,6 +143,20 @@ I added the Add to Template button so that you can save yourself the time it tak
 
 You can also leave the Prompt Template box empty if you just want to generate random words and phrases separated by commas. In that case the prompt generating function outputs the words in the order of the category containers from top to bottom. Simply drag and drop the headers to rearrange the order.
 
+### Multiple Template Cards
+
+The template system supports multiple template cards, which is incredibly useful when you want to experiment with different prompt structures or maintain separate templates for different styles (e.g., one for portraits, one for landscapes, one for video prompts).
+
+Each template card includes:
+
+- **Active Checkbox**: Toggle whether this template card is included in the generation rotation. When you generate prompts, the app randomly picks one active template card. If multiple cards are active, it roulettes between them, giving you variety even within the same generation batch. If no cards are active, it falls back to simple comma-separated words.
+- **Lock Checkbox**: Prevents accidental modification of the template text. Locked templates are read-only and won't be affected by the **Random Template** button or manual edits.
+- **Duplicate Button**: Quickly copy a template card with all its settings (active state, lock state, and text). Perfect for iterating on variations—duplicate, tweak, compare.
+- **Random Template Button**: Inserts a random template from the built-in **PROMPT TEMPLATES** category. Great for inspiration or when you want to start from a proven structure.
+- **Delete Button**: Removes the template card. If it's the last card, it just clears the text instead of deleting (so you always have at least one template box to work with).
+
+This multi-card approach lets you build a library of prompt structures and switch between them effortlessly. Create one card for "cinematic portraits", another for "fantasy landscapes", and a third for "product photography"—then let the generator pick randomly from your active set, or manually switch by toggling the active checkboxes.
+
 ![Drag and Drop](./assets/draganddrop1.gif)
 
 *(Drag the Header of a Container and Drop on top of the Header of another Container.)*
@@ -214,6 +229,36 @@ And these shortcuts respond to whatever category container is currently active.
 | Delete Active Category Container  | `Shift + Alt + X` |
 
 *Note: These shortcuts are based on the default keybindings and may vary depending on your browser or operating system.*
+
+### AI Assistant (LLM Connectivity) (Semi-beta)
+
+*If you want to try the AI assistant feature, I'd recommend starting from scratch and clicking the red "Delete All" on the bottom right of the screen first. So that the LLM can generate everything including the containers.*
+
+The **AI Assistant** feature lets you use a Large Language Model (like OpenAI's GPT models or local models via LM Studio, Ollama, etc.) to automatically build prompt setups based on your natural language requests.
+
+**How it works:**
+
+1. Click the **"Connect LLM"** button to configure your connection:
+   - **Official OpenAI API**: Enter your OpenAI API key for access to GPT models.
+   - **Local / Custom**: Enter your local LLM server URL (e.g., `http://localhost:1234/v1` for LM Studio) and optionally specify a model name.
+
+2. Type your request in natural language, for example:
+   - `"Create a Dark Fantasy prompt setup"`
+   - `"I need ideas for Sci-Fi portraits"`
+   - `"Build a template for Sora video generation"`
+
+3. Click **"Send Prompt"** and the AI will analyze your request and generate:
+   - **Categories**: Relevant word lists (e.g., `SUBJECTS`, `LIGHTING`, `MOOD`) with 10-15 varied items each
+   - **Template**: A sentence structure using those categories in square brackets
+
+The AI automatically creates or updates category containers and applies the template to your active template card. It understands context—if you mention "video", it'll structure the template for continuous shots. If you mention "portrait", it'll focus on character-centric categories.
+
+**Privacy Note:** Your API key is stored locally in your browser's localStorage and never leaves your device. For local models, no data is sent to external servers at all.
+
+**Local LLMs (Ollama, LM Studio, etc.):**
+If you plan to connect to a local model (e.g., `http://localhost:1234/v1`), **you should probably run this app locally.**
+* **Why?** Some browsers block connections from secure websites to insecure local servers ("Mixed Content" errors).
+* **How:** Simply clone the repo and open `index.html` in your browser.
 
 ## Undo
 

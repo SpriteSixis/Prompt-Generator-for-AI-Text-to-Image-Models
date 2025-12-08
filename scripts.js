@@ -370,6 +370,12 @@ function updateLLMSettingsVisibility(providerValue) {
   if (localSettingsGroup) {
     localSettingsGroup.style.display = provider === 'local' ? 'block' : 'none';
   }
+  
+  // Show/hide local warning text
+  const localWarningText = document.getElementById('local-warning-text');
+  if (localWarningText) {
+    localWarningText.style.display = provider === 'local' ? 'block' : 'none';
+  }
 }
 
 function showApiKeyModal() {
