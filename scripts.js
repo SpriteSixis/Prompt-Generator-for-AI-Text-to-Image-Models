@@ -111,7 +111,8 @@ function appendTextToTemplate(text) {
   currentTemplate += (currentTemplate === '' ? '' : ', ') + text;
   targetTextarea.value = currentTemplate;
   
-  // Push new state to undo stack
+  // Push new state to undo stack after programmatic modification
+  // This ensures the programmatically-modified state is recorded
   textUndoStack[targetTextarea.id].push(currentTemplate);
   
   autoResizeTemplateTextarea(targetTextarea);
@@ -226,10 +227,12 @@ function createTemplateCard(text = '', isActive = true, isLocked = false) {
       
       // Set the textarea value to the random template
       textarea.value = randomTemplate;
-      autoResizeTemplateTextarea(textarea);
       
-      // Push new state to undo stack
+      // Push new state to undo stack after programmatic modification
+      // This ensures the programmatically-modified state is recorded
       textUndoStack[textarea.id].push(randomTemplate);
+      
+      autoResizeTemplateTextarea(textarea);
       
       // Focus the textarea
       textarea.focus();
@@ -481,13 +484,25 @@ function appendWordsToCategory(categoryElement, wordsString) {
   const cleanedWords = Array.isArray(wordsString) ? wordsString : wordsString.split(',').map(word => word.trim()).filter(Boolean);
   if (!cleanedWords.length) return;
 
+  // Initialize undo stack if it doesn't exist
+  if (!textUndoStack[textarea.id]) textUndoStack[textarea.id] = [];
+  if (!textRedoStack[textarea.id]) textRedoStack[textarea.id] = [];
+  
+  // Push current state to undo stack BEFORE modifying
+  textUndoStack[textarea.id].push(textarea.value);
+  
+  // Clear redo stack
+  textRedoStack[textarea.id].length = 0;
+
   const newWordsText = cleanedWords.join(', ');
   const currentValue = textarea.value.trim();
   const separator = currentValue && !currentValue.endsWith(',') ? ', ' : '';
-  textarea.value = currentValue ? `${currentValue}${separator}${newWordsText}` : newWordsText;
-
-  if (!textUndoStack[textarea.id]) textUndoStack[textarea.id] = [];
-  textUndoStack[textarea.id].push(textarea.value);
+  const newValue = currentValue ? `${currentValue}${separator}${newWordsText}` : newWordsText;
+  textarea.value = newValue;
+  
+  // Push new state to undo stack after programmatic modification
+  // This ensures the programmatically-modified state is recorded
+  textUndoStack[textarea.id].push(newValue);
 }
 
 function upsertCategoryFromLLM(entry) {
@@ -522,7 +537,8 @@ function applyTemplateFromLLM(templateText) {
   
   targetTextarea.value = templateText;
   
-  // Push new state to undo stack
+  // Push new state to undo stack after programmatic modification
+  // This ensures the programmatically-modified state is recorded
   textUndoStack[targetTextarea.id].push(templateText);
   
   autoResizeTemplateTextarea(targetTextarea);
@@ -2135,9 +2151,6 @@ function addAllToTemplate() {
   let currentTemplate = targetTextarea.value.replace(/^,\s*/, '');
   currentTemplate += (currentTemplate.length > 0 ? ', ' : '') + categoryString;
   targetTextarea.value = currentTemplate;
-  
-  // Push new state to undo stack
-  textUndoStack[targetTextarea.id].push(currentTemplate);
   
   autoResizeTemplateTextarea(targetTextarea);
 }
